@@ -1,0 +1,20 @@
+exports.reformulateResume = async (req, res) => {
+    const { cvData, offerData } = req.body;
+    if (!cvData || !offerData) return res.status(400).json({ error: 'Missing cvData or offerData.' });
+
+    try {
+        console.log("Reformulation CV avec GPT ...")
+        const response = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [{ role: 'user', content: buildReformulationPrompt(cvData, offerData) }],
+            temperature: 0.7,
+            max_tokens: 1400
+        });
+
+        console.log("Nouveau CV GÉNÉRÉ !!!")
+        res.json({ reformulatedResume: response.choices[0].message.content });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+};

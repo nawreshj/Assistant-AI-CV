@@ -1,0 +1,275 @@
+const { OpenAI } = require('openai');
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+function buildCvExtractionPrompt(cvText) {
+    return `
+You are an HR parsing assistant.
+Parse the raw CV text below (variable ` + '`cvText`' + `) and return structured data via the function call.
+--- Raw CV Text ---
+${cvText}
+`;
+}
+
+function buildOfferExtractionPrompt(offerText) {
+    return `
+You are an HR parsing assistant.
+Parse the raw job offer text below (variable ` + '`offerText`' + `) and return structured data via the function call.
+--- Raw Job Offer Text ---
+${offerText}
+`;
+}
+
+function buildReformulationPrompt(cvData, offerData) {
+    return `
+You are an experienced HR professional and resume consultant.
+
+Your task is to generate a personalized and improved version of the candidate’s resume, based on the structured data provided below.
+
+Candidate Data (JSON):
+${JSON.stringify(cvData, null, 2)}
+
+Job Offer Data (JSON):
+${JSON.stringify(offerData, null, 2)}
+
+Rules:
+- Use only provided CV data: do not invent experiences, education, or certifications.
+- Allow logical inferences: mention skills clearly implied by roles (e.g., teamwork, Python).
+- Rephrase and restructure: rewrite and organize content for clarity and impact.
+- Maintain a professional tone: concise, recruiter-friendly language.
+- Preserve original terms: keep any non-English or candidate-specific language.
+
+--- Reformulated Resume ---
+`;
+}
+
+
+function sanitizeCvText(raw) {
+    return raw
+        .replace(/[\u0000-\u001F\u007F]/g, '')
+        .replace(/\\/g, '\\\\')
+        .replace(/"/g, '\\"');
+}
+
+exports.extractCv = async (req, res) => {
+    const { cvText } = req.body;
+    if (!cvText) return res.status(400).json({ error: 'Missing cvText.' });
+    const cleanedText = sanitizeCvText(cvText);
+    const cleanedOfferText = sanitizeCvText(offerText);
+
+    try {
+        const response = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [{ role: 'user', content: buildCvExtractionPrompt(cleanedText) }],
+            functions: [
+                {
+                    name: 'extract_cv',
+                    description: 'Extract structured CV data',
+                    parameters: {
+                        type: 'object',
+                        properties: {
+                            last_name:        { type: 'string' },
+                            first_name:       { type: 'string' },
+                            contact: {
+                                type: 'object',
+                                properties: {
+                                    email:   { type: 'string' },
+                                    phone:   { type: 'string' },
+                                    address: { type: 'string' }
+                                },
+                                required: ['email','phone']
+                            },
+                            skills:            { type: 'array',  items: { type: 'string' } },
+                            soft_skills:       { type: 'array',  items: { type: 'string' } },
+                            languages:         { type: 'array',  items: { type: 'string' } },
+                            experience: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        title:     { type: 'string' },
+                                        company:   { type: 'string' },
+                                        start_date:{ type: 'string' },
+                                        end_date:  { type: 'string' }
+                                    },
+                                    required: ['title','company']
+                                }
+                            },
+                            education_level:   { type: 'string' },
+                            desired_job_title: { type: 'string' }
+                        },
+                        required: ['last_name','first_name']
+                    }
+                }
+            ],
+            function_call: { name: 'extract_cv' },
+            temperature: 0,
+            max_tokens: 800
+        });
+
+        const args = response.choices[0].message.function_call.arguments;
+
+        const cvData = JSON.parse(args);
+        res.json({ cvData });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.extractOffer = async (req, res) => {
+    const { offerText } = req.body;
+    if (!offerText) return res.status(400).json({ error: 'Missing offerText.' });
+
+    try {
+        const response = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [{ role: 'user', content: buildOfferExtractionPrompt(offerText) }],
+            functions: [
+                {
+                    name: 'extract_offer',
+                    description: 'Extract structured job offer data',
+                    parameters: {
+                        type: 'object',
+                        properties: {
+                            job_title:               { type: 'string' },
+                            company:                 { type: 'string' },
+                            required_skills:         { type: 'array',  items: { type: 'string' } },
+                            education_level_required:{ type: 'string' },
+                            languages_required:      { type: 'array',  items: { type: 'string' } }
+                        },
+                        required: ['job_title','company']
+                    }
+                }
+            ],
+            function_call: { name: 'extract_offer' },
+            temperature: 0,
+            max_tokens: 150
+        });
+
+        const args = response.choices[0].message.function_call.arguments;
+        const offerData = JSON.parse(args);
+        res.json({ offerData });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+//----------------- fonction qui extract en meme temps on va voir si cava plus vite ----------------------
+exports.extractBoth = async (req, res) => {
+    const { cvText, offerText } = req.body;
+    if (!cvText || !offerText) {
+        return res.status(400).json({ error: 'Missing cvText or offerText.' });
+    }
+    //const cleanedCvText = sanitizeCvText(cvText);
+    //const cleanedOfferText = sanitizeCvText(offerText);
+    //console.log( cleanedCvText);
+    try {
+        console.log("Extraction des données CV et de l'image avce GPT... ")
+        const [cvResponse, offerResponse] = await Promise.all([
+            openai.chat.completions.create({
+                model: 'gpt-4o-mini',
+                messages: [{ role: 'user', content: buildCvExtractionPrompt(cvText) }],
+                functions: [
+                    {
+                        name: 'extract_cv',
+                        description: 'Extract structured CV data',
+                        parameters: {
+                            type: 'object',
+                            properties: {
+                                last_name:        { type: 'string' },
+                                first_name:       { type: 'string' },
+                                contact: {
+                                    type: 'object',
+                                    properties: {
+                                        email:   { type: 'string' },
+                                        phone:   { type: 'string' },
+                                        address: { type: 'string' }
+                                    },
+                                    required: ['email', 'phone']
+                                },
+                                skills:            { type: 'array',  items: { type: 'string' } },
+                                soft_skills:       { type: 'array',  items: { type: 'string' } },
+                                languages:         { type: 'array',  items: { type: 'string' } },
+                                experience: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            title:      { type: 'string' },
+                                            company:    { type: 'string' },
+                                            start_date: { type: 'string' },
+                                            end_date:   { type: 'string' }
+                                        },
+                                        required: ['title', 'company']
+                                    }
+                                },
+                                education_level:   { type: 'string' },
+                                desired_job_title: { type: 'string' }
+                            },
+                            required: ['last_name', 'first_name']
+                        }
+                    }
+                ],
+                function_call: { name: 'extract_cv' },
+                temperature: 0,
+                max_tokens: 800
+            }),
+            openai.chat.completions.create({
+                model: 'gpt-4o-mini',
+                messages: [{ role: 'user', content: buildOfferExtractionPrompt(offerText) }],
+                functions: [
+                    {
+                        name: 'extract_offer',
+                        description: 'Extract structured job offer data',
+                        parameters: {
+                            type: 'object',
+                            properties: {
+                                job_title:               { type: 'string' },
+                                company:                 { type: 'string' },
+                                required_skills:         { type: 'array', items: { type: 'string' } },
+                                education_level_required:{ type: 'string' },
+                                languages_required:      { type: 'array', items: { type: 'string' } }
+                            },
+                            required: ['job_title', 'company']
+                        }
+                    }
+                ],
+                function_call: { name: 'extract_offer' },
+                temperature: 0,
+                max_tokens: 150
+            })
+        ]);
+
+        const cvData = JSON.parse(cvResponse.choices[0].message.function_call.arguments);
+        const offerData = JSON.parse(offerResponse.choices[0].message.function_call.arguments);
+        console.log("Extraction des données pertinentes du CV et de l'offre realisé avec succès ! ");
+        console.log(cvData);
+        res.json({ cvData, offerData });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+//----------------------------------------
+
+exports.reformulateResume = async (req, res) => {
+    const { cvData, offerData } = req.body;
+    if (!cvData || !offerData) return res.status(400).json({ error: 'Missing cvData or offerData.' });
+
+    try {
+        console.log("Reformulation CV avec GPT ...")
+        const response = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [{ role: 'user', content: buildReformulationPrompt(cvData, offerData) }],
+            temperature: 0.7,
+            max_tokens: 800
+        });
+
+        res.json({ reformulatedResume: response.choices[0].message.content });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+};
