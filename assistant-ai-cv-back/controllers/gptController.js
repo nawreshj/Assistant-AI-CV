@@ -58,6 +58,7 @@ ${JSON.stringify(cvData, null, 2)}
 Job Offer Data:
 ${JSON.stringify(offerData, null, 2)}
 
+
 Guidelines:
 - Do NOT invent or add information. Use only what is explicitly or implicitly present in the CV.
 - Reformulate the content to improve clarity, professionalism, and relevance to the job offer.
@@ -66,6 +67,13 @@ Guidelines:
 - Group technical skills by category when applicable.
 - Ensure consistent tone, grammar, and logical order.
 - Output only the final structured result (function_call will handle formatting).
+
+Important formatting rule:
+For each item in "experiences", "educations", and "projects", always use the following format exactly:
+
+[Company or Institution], [Start date - End date] : [Description of the experience or project]
+
+
 `;
 }
 
