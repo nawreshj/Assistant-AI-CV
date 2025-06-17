@@ -16,6 +16,7 @@ Parse the raw CV text below and extract structured data using the function call.
 - languages: spoken or written languages with optional levels
 - experiences: one string per experience (include title, company, duration, description)
 - educations: one string per education/training (degree, institution, years, etc.)
+- certifications: optional, list of certifications mentioned in the CV (name, issuer, year if available)
 - projects: optional, list of relevant academic or personal projects (title + short description)
 - achievements: optional, list of accomplishments or results (e.g., awards, published work, notable results)
 - hobbies: optional, list of interests or leisure activities
@@ -49,34 +50,22 @@ function buildReformulationPrompt(cvData, offerData) {
     return `
 You are an experienced HR professional and resume consultant.
 
-Your task is to generate a personalized and improved version of the candidate’s resume, based on the structured data provided below.
+Your task is to generate a structured and improved version of the candidate’s resume using the structured CV and job offer data provided below.
 
-Candidate Data (JSON):
+Candidate Data:
 ${JSON.stringify(cvData, null, 2)}
 
-Job Offer Data (JSON):
+Job Offer Data:
 ${JSON.stringify(offerData, null, 2)}
 
-Rules:
-- Detect the dominant language of the content written in the CV data (not the labels or keys), and use that same language for all generated text and section titles. Do not translate or mix languages. If the CV is written in English, keep all text and titles in English.
-- Use only the provided CV data. Do not invent, add, or assume any experience, education, certification, or language not mentioned or directly implied by the candidate’s data.
-- Rephrase and improve existing content for clarity and professional tone, but preserve the original language of the CV (French or English).
-- Do not translate the CV into another language.
-- Keep the gender consistent with what is inferred from the CV data (e.g., grammatical markers, names, pronouns).
-- Add a CV title at the very top based on the candidate's background.
-- Order the experiences from the most recent to the oldest.
-- Detect the main language of the CV (French or English) from the original content, and use that language consistently for all section titles. Do not mix languages. Do not translate section titles into another language.
-- Highlight the skills that are both present in the CV **and** required by the job offer using bold formatting (**like this**).
-- All section titles must remain in the original language of the CV. Do not translate or rename them.
-- Use asterisks **only** around section titles so they can be recognized later.
-- Use dashes (-) or plain text for lists and bullet points — but never use asterisks (*) for them.
-- Organize technical skills into thematic groups when appropriate (e.g., Development, Databases, DevOps, Networking).
-- If a language is listed, include the level of proficiency if specified, or try to infer it if possible from the context.
-- This is a CV, not a cover letter: do not include any motivational statements, goals, or personal opinions.
-- Do not add any conclusions or commentary.
-- Do not include your own explanation or prompt. Output only the reformulated CV content.
-
---- Reformulated Resume ---
+Guidelines:
+- Do NOT invent or add information. Use only what is explicitly or implicitly present in the CV.
+- Reformulate the content to improve clarity, professionalism, and relevance to the job offer.
+- Detect the main language used in the CV content and keep all text and section titles in that language.
+- Highlight skills that are present in both the CV and the job offer using **bold** formatting.
+- Group technical skills by category when applicable.
+- Ensure consistent tone, grammar, and logical order.
+- Output only the final structured result (function_call will handle formatting).
 `;
 }
 
@@ -228,6 +217,10 @@ exports.extractBoth = async (req, res) => {
                                     type: 'array',
                                     items: { type: 'string' } // un bloc texte par expérience
                                 },
+                                certifications: {
+                                    type: 'array',
+                                    items: { type: 'string' } // un bloc texte par certification
+                                },
                                 educations: {
                                     type: 'array',
                                     items: { type: 'string' } // un bloc texte par formation
@@ -294,18 +287,97 @@ exports.reformulateResume = async (req, res) => {
     if (!cvData || !offerData) return res.status(400).json({ error: 'Missing cvData or offerData.' });
 
     try {
-        console.log("Reformulation CV avec GPT ...")
+        console.log("Reformulation CV structurée avec GPT...");
+
         const response = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [{ role: 'user', content: buildReformulationPrompt(cvData, offerData) }],
+            functions: [
+                {
+                    name: 'generate_structured_cv',
+                    description: 'Generates a structured CV with personalized sections',
+                    parameters: {
+                        type: 'object',
+                        properties: {
+                            full_name:         { type: 'string' },
+                            contact_block:     { type: 'string' },
+                            cv_title:          { type: 'string' },
+                            profile:           { type: 'string' },
+                            skills: {
+                                type: 'object',
+                                properties: {
+                                    title: { type: 'string' },
+                                    items: { type: 'array', items: { type: 'string' } }
+                                }
+                            },
+                            soft_skills: {
+                                type: 'object',
+                                properties: {
+                                    title: { type: 'string' },
+                                    items: { type: 'array', items: { type: 'string' } }
+                                }
+                            },
+                            languages: {
+                                type: 'object',
+                                properties: {
+                                    title: { type: 'string' },
+                                    items: { type: 'array', items: { type: 'string' } }
+                                }
+                            },
+                            experiences: {
+                                type: 'object',
+                                properties: {
+                                    title: { type: 'string' },
+                                    items: { type: 'array', items: { type: 'string' } }
+                                }
+                            },
+                            educations: {
+                                type: 'object',
+                                properties: {
+                                    title: { type: 'string' },
+                                    items: { type: 'array', items: { type: 'string' } }
+                                }
+                            },
+                            projects: {
+                                type: 'object',
+                                properties: {
+                                    title: { type: 'string' },
+                                    items: { type: 'array', items: { type: 'string' } }
+                                }
+                            },
+                            certifications: {
+                                type: 'object',
+                                properties: {
+                                    title: { type: 'string' },
+                                    items: { type: 'array', items: { type: 'string' } }
+                                }
+                            },
+                            hobbies: {
+                                type: 'object',
+                                properties: {
+                                    title: { type: 'string' },
+                                    items: { type: 'array', items: { type: 'string' } }
+                                }
+                            }
+                        },
+                        required: ['full_name', 'cv_title', 'contact_block']
+                    }
+                }
+            ],
+            function_call: { name: 'generate_structured_cv' },
             temperature: 0.7,
-            max_tokens: 1400
+            max_tokens: 1800
         });
 
-        console.log("Nouveau CV GÉNÉRÉ !!!")
-        res.json({ reformulatedResume: response.choices[0].message.content });
+        const structuredCV = JSON.parse(response.choices[0].message.function_call.arguments);
+
+        console.log("✅ CV structuré généré !");
+        console.log(structuredCV);
+        res.json({ structuredCV });
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
     }
 };
+

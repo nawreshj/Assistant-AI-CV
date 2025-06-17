@@ -1,0 +1,79 @@
+.preview-container {
+    width: 90%;
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.preview-section {
+    margin-bottom: 2rem;
+}
+
+.preview-section h3 {
+    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0.5rem;
+}
+
+.preview-section ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+}
+
+.preview-section li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.preview-header {
+    margin-bottom: 2rem;
+}
+
+.preview-header h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.8rem;
+    color: #222;
+}
+
+.preview-header p {
+    margin: 0;
+    color: #555;
+}
+
+.preview-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+.preview-buttons button {
+    padding: 0.8rem 1.4rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.modify-btn {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.modify-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.download-btn {
+    background-color: #ffc107;
+    color: black;
+}
+
+.download-btn:hover {
+    background-color: #e0a800;
+}

@@ -18,3 +18,37 @@ exports.reformulateResume = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+function buildReformulationPrompt(cvData, offerData) {
+    return `
+You are an experienced HR professional and resume consultant.
+
+Your task is to generate a personalized and improved version of the candidate’s resume, based on the structured data provided below.
+
+Candidate Data (JSON):
+${JSON.stringify(cvData, null, 2)}
+
+Job Offer Data (JSON):
+${JSON.stringify(offerData, null, 2)}
+
+Rules:
+- Detect the dominant language of the content written in the CV data (not the labels or keys), and use that same language for all generated text and section titles. Do not translate or mix languages. If the CV is written in English, keep all text and titles in English.
+- Use only the provided CV data. Do not invent, add, or assume any experience, education, certification, or language not mentioned or directly implied by the candidate’s data.
+- Rephrase and improve existing content for clarity and professional tone, but preserve the original language of the CV (French or English).
+- Do not translate the CV into another language.
+- Keep the gender consistent with what is inferred from the CV data (e.g., grammatical markers, names, pronouns).
+- Add a CV title at the very top based on the candidate's background.
+- Order the experiences from the most recent to the oldest.
+- Detect the main language of the CV (French or English) from the original content, and use that language consistently for all section titles. Do not mix languages. Do not translate section titles into another language.
+- Highlight the skills that are both present in the CV **and** required by the job offer using bold formatting (**like this**).
+- All section titles must remain in the original language of the CV. Do not translate or rename them.
+- Use asterisks **only** around section titles so they can be recognized later.
+- Use dashes (-) or plain text for lists and bullet points — but never use asterisks (*) for them.
+- Organize technical skills into thematic groups when appropriate (e.g., Development, Databases, DevOps, Networking).
+- If a language is listed, include the level of proficiency if specified, or try to infer it if possible from the context.
+- This is a CV, not a cover letter: do not include any motivational statements, goals, or personal opinions.
+- Do not add any conclusions or commentary.
+- Do not include your own explanation or prompt. Output only the reformulated CV content.
+
+--- Reformulated Resume ---
+`;
+}

@@ -1,13 +1,15 @@
 .App {
-  width: 100vw;                 /* ← prend toute la largeur visible */
-  height: 100vh;                /* ← prend toute la hauteur visible */
+  min-height: 100vh; /* au lieu de height */
+  width: 100vw;
   display: flex;
-  justify-content: center;     /* ← centre horizontalement */
-  align-items: center;         /* ← centre verticalement */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   background: linear-gradient(to right, #eef2f3, #dfe6e9);
   box-sizing: border-box;
   padding: 2rem;
 }
+
 
 .result-container {
   width: 90%;

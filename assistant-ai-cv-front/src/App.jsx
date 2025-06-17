@@ -1,36 +1,26 @@
 import React, { useState } from 'react';
 import UploadForm from './components/UploadForm';
 import Loading from './components/Loading';
+import PreviewPage from './pages/PreviewPage';
 import "./styles/App.css";
-import {getExtractionText} from "./api/extractionAPI.jsx";
-import {getExtractionGpt, getReformulationGpt} from "./api/gptApi.jsx";
+import { getExtractionText } from "./api/extractionAPI.jsx";
+import { getExtractionGpt, getReformulationGpt } from "./api/gptApi.jsx";
 
 function App() {
     const [isLoading, setIsLoading] = useState(false);
-    const [reformulatedResume, setReformulatedResume] = useState('');
+    const [structuredCV, setStructuredCV] = useState(null);
     const [error, setError] = useState('');
-    const [editableResume, setEditableResume] = useState('');
-
-
 
     const handleSubmit = async (formData) => {
         setIsLoading(true);
         setError('');
-        setReformulatedResume('');
+        setStructuredCV(null);
 
         try {
-            // Etape 1 : extraire les textes bruts
             const [cvText, offerText] = await getExtractionText(formData);
-
-            // Étape 2 : envoyer les textes bruts
-            const { cvData, offerData } = await getExtractionGpt({cvText,offerText});
-
-            // Étape 3 : envoyer les données structurées pour reformulation
-            const { reformulatedResume } = await getReformulationGpt({cvData,offerData});
-
-            setReformulatedResume(reformulatedResume);
-            setEditableResume(reformulatedResume);
-
+            const { cvData, offerData } = await getExtractionGpt({ cvText, offerText });
+            const { structuredCV } = await getReformulationGpt({ cvData, offerData });
+            setStructuredCV(structuredCV);
         } catch (err) {
             console.error(err);
             setError("Une erreur est survenue pendant le traitement.");
@@ -39,31 +29,16 @@ function App() {
         }
     };
 
-
     return (
         <div className="App">
-            {isLoading && <Loading/>}
+            {isLoading && <Loading />}
 
-            {!isLoading && !reformulatedResume && !error && (
-                <UploadForm onSubmit={handleSubmit}/>
+            {!isLoading && !structuredCV && !error && (
+                <UploadForm onSubmit={handleSubmit} />
             )}
 
-            {!isLoading && reformulatedResume && (
-                <div className="result-container">
-                    <h2>CV personnalisé généré :</h2>
-                    <textarea
-                        className="editable-cv"
-                        value={editableResume}
-                        onChange={(e) => setEditableResume(e.target.value)}
-                        rows={20}
-                    />
-                    <button className="reset-button" onClick={() => {
-                        setReformulatedResume('');
-                        setError('');
-                    }}>
-                        🔄 Recommencer
-                    </button>
-                </div>
+            {!isLoading && structuredCV && (
+                <PreviewPage structuredCV={structuredCV} onReset={() => setStructuredCV(null)} />
             )}
 
             {!isLoading && error && (
@@ -75,4 +50,4 @@ function App() {
     );
 }
 
-    export default App;
+export default App;
