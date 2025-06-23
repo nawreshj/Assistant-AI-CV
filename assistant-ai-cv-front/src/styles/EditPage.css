@@ -1,76 +1,83 @@
-/* EditPage.css */
-
-.edit-page {
-    max-width: 900px;
-    margin: 2rem auto;
+.edit-container {
+    max-width: 800px;
+    margin: 0 auto;
     padding: 2rem;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #fdfdfd;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.05);
 }
 
-.edit-page h2 {
+.edit-container h2 {
     text-align: center;
     margin-bottom: 2rem;
+    font-size: 2rem;
+    color: #333;
 }
 
-.edit-field {
+.edit-section {
     margin-bottom: 1.5rem;
 }
 
-.edit-field label {
-    font-weight: bold;
+.edit-section label {
     display: block;
+    font-weight: 600;
     margin-bottom: 0.5rem;
+    color: #444;
 }
 
-.edit-field input,
-.edit-field textarea {
+.edit-section input[type="text"],
+.edit-section textarea {
     width: 100%;
-    padding: 0.8rem;
-    border-radius: 8px;
+    padding: 0.8rem 1rem;
     border: 1px solid #ccc;
+    border-radius: 8px;
     font-size: 1rem;
-    font-family: sans-serif;
+    transition: border 0.2s;
     resize: vertical;
+    min-height: 40px;
 }
 
-.edit-array-section {
-    margin-bottom: 2rem;
+.edit-section textarea {
+    min-height: 80px;
 }
 
-.edit-array-section h3 {
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 0.3rem;
+.edit-section input[type="text"]:focus,
+.edit-section textarea:focus {
+    border-color: #0077cc;
+    outline: none;
 }
 
-.edit-array-section .edit-field {
-    margin-bottom: 1rem;
-}
-
-.edit-buttons {
+.edit-actions {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
     margin-top: 2rem;
 }
 
-.edit-buttons button {
-    padding: 0.75rem 1.5rem;
+.btn {
+    padding: 0.7rem 1.5rem;
     border: none;
     border-radius: 8px;
     font-size: 1rem;
     cursor: pointer;
+    transition: background 0.2s;
 }
 
-.edit-buttons button:first-child {
-    background-color: #ccc;
-    color: black;
-}
-
-.edit-buttons button:last-child {
+.btn-primary {
     background-color: #0077cc;
     color: white;
 }
+
+.btn-primary:hover {
+    background-color: #005fa3;
+}
+
+.btn-secondary {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.btn-secondary:hover {
+    background-color: #c5c5c5;
+}
+

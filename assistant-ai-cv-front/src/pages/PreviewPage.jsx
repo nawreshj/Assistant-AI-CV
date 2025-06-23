@@ -1,7 +1,7 @@
 import React from 'react';
 import "../styles/PreviewPage.css";
 
-function PreviewPage({ structuredCV, onReset }) {
+function PreviewPage({ structuredCV,onEdit,onReset}) {
     const renderSection = (section) => {
         if (!section || !section.items || section.items.length === 0) return null;
         return (
@@ -33,8 +33,17 @@ function PreviewPage({ structuredCV, onReset }) {
             {renderSection(structuredCV.hobbies)}
 
             <div className="button-container">
-                <button onClick={onReset}>Modifier le CV</button>
+                <button
+                    onClick={() => {
+                        console.log("Clic détecté : onEdit");
+                        onEdit();
+                    }}
+                >
+                    Modifier le CV
+                </button>
                 <button className="pdf-button">Générer le CV en PDF</button>
+                <button onClick={onReset} className="reset-button">Recommencer</button>
+
             </div>
         </div>
     );
