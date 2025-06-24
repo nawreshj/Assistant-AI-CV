@@ -1,0 +1,30 @@
+/* AutoResizeTextarea.css */
+.auto-textarea {
+    width: auto;
+    resize: none;
+    overflow: hidden;
+    padding: 8px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    transition: all 0.2s ease-in-out;
+}
+textarea {
+    line-height: 1.5;
+    overflow: hidden;
+    resize: none;
+}
+
+.auto-textarea:focus {
+    outline: none;
+    border-color: #777;
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+.auto-textarea.compact-textarea {
+    width: auto;                /* ne plus prendre 100% */
+    min-width: 0px;            /* largeur mini */
+    max-width: 200px;           /* largeur maxi si tu veux limiter */
+    display: inline-block;      /* réduit à son contenu */
+    vertical-align: top;        /* pour aligner proprement */
+}

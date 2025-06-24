@@ -8,6 +8,8 @@
     box-shadow: 0 0 20px rgba(0,0,0,0.05);
 }
 
+
+
 .edit-container h2 {
     text-align: center;
     margin-bottom: 2rem;
@@ -38,9 +40,7 @@
     min-height: 40px;
 }
 
-.edit-section textarea {
-    min-height: 80px;
-}
+
 
 .edit-section input[type="text"]:focus,
 .edit-section textarea:focus {
@@ -80,4 +80,37 @@
 .btn-secondary:hover {
     background-color: #c5c5c5;
 }
+/* Compact (skills, soft_skills, languages) */
+.small-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 0.5rem;
+}
+
+.small-textarea {
+    min-width: 60px;
+    max-width: 200px;
+    padding: 4px 8px;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    resize: vertical;
+    overflow: auto;
+}
+
+/* Large (experiences, educations, projects, certifications, hobbies) */
+.regular-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 1rem;
+    line-height: 1.4;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    resize: vertical;
+    overflow: auto;
+    margin-top: 0.5rem;
+}
+
 

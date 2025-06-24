@@ -1,5 +1,6 @@
 import React from 'react';
 import '../styles/EditPage.css';
+import AutoResizeTextarea from "../components/AutoResizeTextarea.jsx";
 
 const EditPage = ({ structuredCV, onChange, onBack, onGenerate }) => {
     const handleChange = (section, key, value) => {
@@ -59,7 +60,7 @@ const EditPage = ({ structuredCV, onChange, onBack, onGenerate }) => {
                                 onChange={(e) => handleChange(key, 'title', e.target.value)}
                             />
                             {value.items.map((item, index) => (
-                                <textarea
+                                <AutoResizeTextarea
                                     key={index}
                                     value={item}
                                     onChange={(e) => handleChange(key, index, e.target.value)}
