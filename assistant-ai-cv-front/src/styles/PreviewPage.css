@@ -92,6 +92,10 @@
     margin-bottom: 20px;
     overflow: hidden;
 }
+.cv-frame-container {
+    background-color: #fff;
+}
+
 
 .cv-frame-container iframe {
     border: none;

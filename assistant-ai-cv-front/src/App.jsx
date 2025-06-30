@@ -11,38 +11,41 @@ export default function App() {
     const navigate = useNavigate();
 
     return (
-        <Routes>
-            {/* Page de génération du CV */}
-            <Route
-                path="/"
-                element={<GeneratePage setStructuredCV={setStructuredCV} />}
-            />
+        <div className="App">
 
-            {/* Page de prévisualisation avec passage de onGenerate */}
-            <Route
-                path="/preview"
-                element={
-                    <PreviewPage
-                        structuredCV={structuredCV}
-                        onEdit={() => navigate('/edit')}
-                        onGenerate={() => downloadPdf(structuredCV)}
-                        onReset={() => navigate('/')}
-                    />
-                }
-            />
+            <Routes>
+                {/* Page de génération du CV */}
+                <Route
+                    path="/"
+                    element={<GeneratePage setStructuredCV={setStructuredCV}/>}
+                />
 
-            {/* Page d'édition, on peut également réutiliser downloadPdf si désiré */}
-            <Route
-                path="/edit"
-                element={
-                    <EditPage
-                        structuredCV={structuredCV}
-                        onChange={setStructuredCV}
-                        onBack={() => navigate('/preview')}
-                        onGenerate={() => downloadPdf(structuredCV)}
-                    />
-                }
-            />
-        </Routes>
-    );
-}
+                {/* Page de prévisualisation avec passage de onGenerate */}
+                <Route
+                    path="/preview"
+                    element={
+                        <PreviewPage
+                            structuredCV={structuredCV}
+                            onEdit={() => navigate('/edit')}
+                            onGenerate={() => downloadPdf(structuredCV)}
+                            onReset={() => navigate('/')}
+                        />
+                    }
+                />
+
+                {/* Page d'édition, on peut également réutiliser downloadPdf si désiré */}
+                <Route
+                    path="/edit"
+                    element={
+                        <EditPage
+                            structuredCV={structuredCV}
+                            onChange={setStructuredCV}
+                            onBack={() => navigate('/preview')}
+                            onGenerate={() => downloadPdf(structuredCV)}
+                        />
+                    }
+                />
+            </Routes>
+        </div>
+            );
+            }
