@@ -5,10 +5,14 @@ const app = express();
 const gptRoutes  = require('./routes/gptRoutes');
 
 const extractionRoutes = require('./routes/extractionRoutes');
+const pdfRoutes= require('./routes/pdfRoutes');
+
 
 app.use(express.json());
 app.use('/api/gpt', gptRoutes);
 app.use('/api/extraction', extractionRoutes);
+app.use('/api/pdf',pdfRoutes);
+
 
 
 // Route racine / bienvenue

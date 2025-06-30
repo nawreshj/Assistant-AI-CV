@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= cv_title %></title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      color: #333;
+      line-height: 1.4;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 32px;
+      margin: 0;
+      font-weight: bold;
+    }
+    .header h2 {
+      font-size: 18px;
+      margin: 5px 0;
+      font-weight: normal;
+      color: #666;
+    }
+    .header .contact {
+      font-size: 12px;
+      color: #444;
+      margin-top: 8px;
+    }
+    section {
+      margin-bottom: 20px;
+    }
+    section h3 {
+      font-size: 14px;
+      text-transform: uppercase;
+      font-weight: bold;
+      margin: 0 0 5px 0;
+      padding-bottom: 3px;
+      border-bottom: 1px solid #000;
+    }
+    section p {
+      margin: 0;
+      font-size: 12px;
+    }
+    section ul {
+      list-style: disc inside;
+      margin: 5px 0 0 0;
+      padding: 0;
+    }
+    section ul li {
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+<div class="header">
+  <h1><%= full_name %></h1>
+  <h2><%= cv_title %></h2>
+  <p class="contact"><%- contact_block.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></p>
+</div>
+
+<% if (typeof profile !== 'undefined' && profile) { %>
+  <section>
+    <h3>Résumé</h3>
+    <p><%- profile.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></p>
+  </section>
+<% } %>
+
+<% if (typeof experiences !== 'undefined' && experiences.items && experiences.items.length) { %>
+  <section>
+    <h3><%= experiences.title %></h3>
+    <ul>
+      <% experiences.items.forEach(item => { %>
+        <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+      <% }) %>
+    </ul>
+  </section>
+<% } %>
+
+<% if (typeof educations !== 'undefined' && educations.items && educations.items.length) { %>
+  <section>
+    <h3><%= educations.title %></h3>
+    <ul>
+      <% educations.items.forEach(item => { %>
+        <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+      <% }) %>
+    </ul>
+  </section>
+<% } %>
+
+<% if (typeof projects !== 'undefined' && projects.items && projects.items.length) { %>
+  <section>
+    <h3><%= projects.title %></h3>
+    <ul>
+      <% projects.items.forEach(item => { %>
+        <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+      <% }) %>
+    </ul>
+  </section>
+<% } %>
+
+<% if (typeof languages !== 'undefined' && languages.items && languages.items.length) { %>
+  <section>
+    <h3><%= languages.title %></h3>
+    <ul>
+      <% languages.items.forEach(item => { %>
+        <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+      <% }) %>
+    </ul>
+  </section>
+<% } %>
+
+<% if (typeof skills !== 'undefined' && skills.items && skills.items.length) { %>
+  <section>
+    <h3><%= skills.title %></h3>
+    <ul>
+      <% skills.items.forEach(item => { %>
+        <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+      <% }) %>
+    </ul>
+  </section>
+<% } %>
+
+<% if (typeof soft_skills !== 'undefined' && soft_skills.items && soft_skills.items.length) { %>
+  <section>
+    <h3><%= soft_skills.title %></h3>
+    <ul>
+      <% soft_skills.items.forEach(item => { %>
+        <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+      <% }) %>
+    </ul>
+  </section>
+<% } %>
+
+<% if (typeof certifications !== 'undefined' && certifications.items && certifications.items.length) { %>
+  <section>
+    <h3><%= certifications.title %></h3>
+    <ul>
+      <% certifications.items.forEach(item => { %>
+        <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+      <% }) %>
+    </ul>
+  </section>
+<% } %>
+
+<% if (typeof hobbies !== 'undefined' && hobbies.items && hobbies.items.length) { %>
+  <section>
+    <h3><%= hobbies.title %></h3>
+    <ul>
+      <% hobbies.items.forEach(item => { %>
+        <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+      <% }) %>
+    </ul>
+  </section>
+<% } %>
+</body>
+</html>

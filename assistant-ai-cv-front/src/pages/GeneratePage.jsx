@@ -20,8 +20,9 @@ const GeneratePage = ({ setStructuredCV }) => {
             const { cvData, offerData } = await getExtractionGpt({ cvText, offerText });
             const { structuredCV } = await getReformulationGpt({ cvData, offerData });
 
-            setStructuredCV(structuredCV);   // On stocke le résultat dans App
-            navigate('/preview');            // On redirige vers la page d’aperçu
+            setStructuredCV(structuredCV);// On stocke le résultat dans App
+            console.log("Tentative de direction ver previewpage");
+            navigate('/preview');// On redirige vers la page d’aperçu
         } catch (err) {
             console.error(err);
             setError("Une erreur est survenue pendant le traitement.");

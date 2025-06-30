@@ -1,52 +1,42 @@
 import React from 'react';
-import "../styles/PreviewPage.css";
+import PropTypes from 'prop-types';
+import '../styles/PreviewPage.css';
+import CvPreview from '../components/CvPreview';
 
-function PreviewPage({ structuredCV,onEdit,onReset}) {
-    const renderSection = (section) => {
-        if (!section || !section.items || section.items.length === 0) return null;
-        return (
-            <div className="cv-section">
-                <h3>{section.title}</h3>
-                <ul>
-                    {section.items.map((item, index) => (
-                        <li key={index}>{item}</li>
-                    ))}
-                </ul>
-            </div>
-        );
-    };
-
+/**
+ * Page de prévisualisation du CV.
+ * Affiche un aperçu fidèle du CV via un <iframe> encapsulé,
+ * puis propose les actions de modification, génération et réinitialisation.
+ */
+function PreviewPage({ structuredCV, onEdit, onGenerate, onReset }) {
     return (
-        <div className="preview-container">
-            <h2>{structuredCV.cv_title}</h2>
-            <h3>{structuredCV.full_name}</h3>
-            <p className="contact-block">{structuredCV.contact_block}</p>
-            <p className="profile">{structuredCV.profile}</p>
+        <div className="preview-page">
+            {/* Aperçu du CV dans un cadre iframe */}
+            <div className="cv-frame-container">
+                <CvPreview structuredCV={structuredCV} />
+            </div>
 
-            {renderSection(structuredCV.skills)}
-            {renderSection(structuredCV.soft_skills)}
-            {renderSection(structuredCV.languages)}
-            {renderSection(structuredCV.experiences)}
-            {renderSection(structuredCV.educations)}
-            {renderSection(structuredCV.projects)}
-            {renderSection(structuredCV.certifications)}
-            {renderSection(structuredCV.hobbies)}
-
+            {/* Boutons d'action */}
             <div className="button-container">
-                <button
-                    onClick={() => {
-                        console.log("Clic détecté : onEdit");
-                        onEdit();
-                    }}
-                >
+                <button onClick={onEdit} className="btn btn-secondary">
                     Modifier le CV
                 </button>
-                <button className="pdf-button">Générer le CV en PDF</button>
-                <button onClick={onReset} className="reset-button">Recommencer</button>
-
+                <button onClick={onGenerate} className="btn btn-primary pdf-button">
+                    Générer le CV en PDF
+                </button>
+                <button onClick={onReset} className="btn btn-danger">
+                    Recommencer
+                </button>
             </div>
         </div>
     );
 }
+
+PreviewPage.propTypes = {
+    structuredCV: PropTypes.object.isRequired,
+    onEdit:       PropTypes.func.isRequired,
+    onGenerate:   PropTypes.func.isRequired,
+    onReset:      PropTypes.func.isRequired,
+};
 
 export default PreviewPage;
