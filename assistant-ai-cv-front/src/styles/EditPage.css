@@ -166,6 +166,19 @@
     font-size: 1rem;
 }
 .section-title long-input{
-    font-size: 0.8rem;
+    font-size: 0.5rem;
 
+}
+
+.btn-add-item {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: #0066cc;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 0;
+}
+.btn-add-item:hover {
+    text-decoration: underline;
 }

@@ -4,6 +4,9 @@ import '../styles/EditPage.css';
 
 const specialSections = ['languages', 'skills', 'soft_skills', 'hobbies'];
 
+
+
+
 const EditPage = ({ structuredCV, onChange, onBack, onGenerate }) => {
     // État d'ouverture des sections
     const [expanded, setExpanded] = useState({});
@@ -32,6 +35,15 @@ const EditPage = ({ structuredCV, onChange, onBack, onGenerate }) => {
         onChange(updated);
     };
 
+    const handleAddItem = section => {
+        const updated = { ...structuredCV };
+        if (!updated[section].items) {
+            updated[section].items = [];
+        }
+        updated[section].items.push('');
+        onChange(updated);
+    };
+
     const labelFor = key => {
         switch (key) {
             case 'full_name': return 'Nom complet';
@@ -41,6 +53,8 @@ const EditPage = ({ structuredCV, onChange, onBack, onGenerate }) => {
                 return structuredCV[key]?.title || key;
         }
     };
+
+
 
     return (
         <div className="edit-container">
@@ -71,7 +85,7 @@ const EditPage = ({ structuredCV, onChange, onBack, onGenerate }) => {
                                     <input
                                         type="text"
                                         className="long-input"
-                                        size={100}
+                                        size={78}
                                         value={sectionValue}
                                         onChange={e => handleChange(sectionKey, null, e.target.value)}
                                     />
@@ -79,45 +93,55 @@ const EditPage = ({ structuredCV, onChange, onBack, onGenerate }) => {
                             )}
 
                             {/* Sections à items */}
-                            {sectionValue && typeof sectionValue === 'object' && 'items' in sectionValue && (
+                            {typeof sectionValue === 'object' && (
                                 <>
-                                    {/* Label avant modification du titre de section */}
-                                    <label
-                                        htmlFor={`${sectionKey}-title`}
-                                        className="section-title-label"
-                                    >
-                                        Modifier le titre :
-                                    </label>
-                                    <input
-                                        id={`${sectionKey}-title`}
-                                        className="section-title long-input"
-                                        type="text"
-                                        size={100}
-                                        value={sectionValue.title}
-                                        onChange={e => handleChange(sectionKey, 'title', e.target.value)}
-                                    />
+                                    {/* Titre éditable */}
+                                        <label htmlFor={`${sectionKey}-title`} className="section-title-label">
+                                            Modifier le titre de la section:
+                                        </label>
+                                        <input
+                                            id={`${sectionKey}-title`}
+                                            className="section-title long-input"
+                                            type="text"
+                                            size={100}
+                                            value={sectionValue.title || ''}
+                                            onChange={e => handleChange(sectionKey, 'title', e.target.value)}
+                                        />
 
-                                    {sectionValue.items.map((item, idx) => (
-                                        specialSections.includes(sectionKey) ? (
-                                            <input
-                                                key={idx}
-                                                type="text"
-                                                className="item-input large-input"
-                                                value={item}
-                                                onChange={e => handleChange(sectionKey, idx, e.target.value)}
-                                            />
-                                        ) : (
-                                            <textarea
-                                                key={idx}
-                                                className="regular-textarea"
-                                                rows={3}
-                                                value={item}
-                                                onChange={e => handleChange(sectionKey, idx, e.target.value)}
-                                            />
-                                        )
-                                    ))}
+                                    {/* 1) Itère sur au plus [], jamais sur undefined */}
+                                        {(sectionValue.items || []).map((item, idx) => (
+                                            specialSections.includes(sectionKey) ? (
+                                                <input
+                                                    key={idx}
+                                                    type="text"
+                                                    className="item-input large-input"
+                                                    value={item}
+                                                    onChange={e => handleChange(sectionKey, idx, e.target.value)}
+                                                />
+                                            ) : (
+                                                <textarea
+                                                    key={idx}
+                                                    className="regular-textarea"
+                                                    rows={3}
+                                                    value={item}
+                                                    onChange={e => handleChange(sectionKey, idx, e.target.value)}
+                                                />
+                                            )
+                                        ))}
+
+                                        {/* 2) + Ajouter toujours visible */}
+                                        <button
+                                            type="button"
+                                            className="btn-add-item"
+                                            onClick={() => handleAddItem(sectionKey)}
+                                        >
+                                            + Ajouter
+                                        </button>
                                 </>
                             )}
+
+
+
                         </div>
                     )}
                 </div>
