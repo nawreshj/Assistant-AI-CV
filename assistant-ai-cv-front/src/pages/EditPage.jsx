@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/EditPage.css';
 
+const specialSections = ['languages', 'skills', 'soft_skills', 'hobbies'];
+
 const EditPage = ({ structuredCV, onChange, onBack, onGenerate }) => {
     // État d'ouverture des sections
     const [expanded, setExpanded] = useState({});
@@ -79,22 +81,40 @@ const EditPage = ({ structuredCV, onChange, onBack, onGenerate }) => {
                             {/* Sections à items */}
                             {sectionValue && typeof sectionValue === 'object' && 'items' in sectionValue && (
                                 <>
+                                    {/* Label avant modification du titre de section */}
+                                    <label
+                                        htmlFor={`${sectionKey}-title`}
+                                        className="section-title-label"
+                                    >
+                                        Modifier le titre :
+                                    </label>
                                     <input
+                                        id={`${sectionKey}-title`}
                                         className="section-title long-input"
                                         type="text"
-                                        size={500}
+                                        size={100}
                                         value={sectionValue.title}
                                         onChange={e => handleChange(sectionKey, 'title', e.target.value)}
                                     />
 
                                     {sectionValue.items.map((item, idx) => (
-                                        <textarea
-                                            key={idx}
-                                            className="regular-textarea"
-                                            rows={3}
-                                            value={item}
-                                            onChange={e => handleChange(sectionKey, idx, e.target.value)}
-                                        />
+                                        specialSections.includes(sectionKey) ? (
+                                            <input
+                                                key={idx}
+                                                type="text"
+                                                className="item-input large-input"
+                                                value={item}
+                                                onChange={e => handleChange(sectionKey, idx, e.target.value)}
+                                            />
+                                        ) : (
+                                            <textarea
+                                                key={idx}
+                                                className="regular-textarea"
+                                                rows={3}
+                                                value={item}
+                                                onChange={e => handleChange(sectionKey, idx, e.target.value)}
+                                            />
+                                        )
                                     ))}
                                 </>
                             )}

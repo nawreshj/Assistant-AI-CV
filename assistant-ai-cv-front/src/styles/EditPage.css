@@ -153,3 +153,19 @@
 .accordion-content textarea {
     box-sizing: border-box;
 }
+.large-input {
+    font-size: 1rem;   /* taille de police augmentée */
+    padding: 0.8rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 0.5rem;
+}
+.long-input{
+    font-size: 1rem;
+}
+.section-title long-input{
+    font-size: 0.8rem;
+
+}
