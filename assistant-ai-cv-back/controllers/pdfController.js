@@ -1,19 +1,50 @@
 const ejs       = require('ejs');
 const path      = require('path');
 const puppeteer = require('puppeteer');
+const sectionTitles = {
+    fr: {
+        profile: "Profil",
+        skills:         "Competences Techniques",
+        soft_skills:    "Atouts",
+        languages:      "Langues",
+        experiences:    "Expériences",
+        educations:     "Formations",
+        projects:       "Projets",
+        certifications: "Certifications",
+        hobbies:        "Centres d’intérêt"
+    },
+    en: {
+        profile:"Profile",
+        skills:         "Technical Skills",
+        soft_skills:    "Soft Skills",
+        languages:      "Languages",
+        experiences:    "Experiences",
+        educations:     "Education",
+        projects:       "Projects",
+        certifications: "Certifications",
+        hobbies:        "Hobbies"
+    }
+};
+
 
 async function generatePdf(req, res, next) {
     try {
         // 1) Récupère le JSON envoyé
         const structuredCV = req.body;
         console.log('🗂 structuredCV reçu :', structuredCV);
+        // 1bis) Détermine la langue et les titres
+        const lang = structuredCV.language || 'en';
+        const titles = sectionTitles[lang] || sectionTitles.en;
+
+// 1ter) Injecte le mapping dans les données passées à EJS
+        const renderData = { ...structuredCV, titles };
 
         // 2) Chemin vers le template
         const templatePath = path.join(__dirname, '../views/cvTemplate.ejs');
         console.log('🔗 templatePath :', templatePath);
 
         // 3) Rend le HTML
-        const html = await ejs.renderFile(templatePath, structuredCV);
+        const html = await ejs.renderFile(templatePath, renderData);
         console.log('📝 HTML généré (longueur) :', html.length);
 
         // 4) Lancement de Puppeteer

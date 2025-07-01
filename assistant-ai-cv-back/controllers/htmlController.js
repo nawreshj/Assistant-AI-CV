@@ -2,6 +2,30 @@
 
 const ejs  = require('ejs');            // Moteur de template Embedded JavaScript
 const path = require('path');           // Utils pour gérer les chemins de fichier
+const sectionTitles = {
+    fr: {
+        profile: "Profil",
+        skills:         "COMPÉTENCES TECHNIQUES",
+        soft_skills:    "Atouts",
+        languages:      "Langues",
+        experiences:    "Expériences",
+        educations:     "Formations",
+        projects:       "Projets",
+        certifications: "Certifications",
+        hobbies:        "Centres d’intérêt"
+    },
+    en: {
+        profile:"Profile",
+        skills:         "Technical Skills",
+        soft_skills:    "Soft Skills",
+        languages:      "Languages",
+        experiences:    "Experiences",
+        educations:     "Education",
+        projects:       "Projects",
+        certifications: "Certifications",
+        hobbies:        "Hobbies"
+    }
+};
 
 /**
  * POST /api/pdf/html
@@ -15,12 +39,17 @@ exports.getCvHtml = async (req, res, next) => {
         const structuredCV = req.body;
         console.log('📥 getCvHtml payload:', structuredCV);
 
+        const lang = structuredCV.language || 'en';
+        const titles = sectionTitles[lang] || sectionTitles.en;
+        const renderData = { ...structuredCV, titles };
+
+
         // 2) Construction du chemin vers le fichier de template EJS
         const templatePath = path.join(__dirname, '../views/cvTemplate.ejs');
         console.log('🔗 Template EJS path:', templatePath);
 
         // 3) Rend le template en HTML string
-        const html = await ejs.renderFile(templatePath, structuredCV);
+        const html = await ejs.renderFile(templatePath, renderData);
         console.log('✅ HTML généré (length):', html.length);
 
         // 4) Renvoi du HTML au client (Content-Type text/html)

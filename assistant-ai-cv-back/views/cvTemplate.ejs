@@ -65,14 +65,14 @@
 
 <% if (typeof profile !== 'undefined' && profile) { %>
   <section>
-    <h3>Résumé</h3>
+    <h3><%= titles.profile %></h3>
     <p><%- profile.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></p>
   </section>
 <% } %>
 
-<% if (typeof experiences !== 'undefined' && experiences.items && experiences.items.length) { %>
+<% if (experiences?.items?.length) { %>
   <section>
-    <h3><%= experiences.title %></h3>
+    <h3><%= titles.experiences %></h3>
     <ul>
       <% experiences.items.forEach(item => { %>
         <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
@@ -81,9 +81,9 @@
   </section>
 <% } %>
 
-<% if (typeof educations !== 'undefined' && educations.items && educations.items.length) { %>
+<% if (educations?.items?.length) { %>
   <section>
-    <h3><%= educations.title %></h3>
+    <h3><%= titles.educations %></h3>
     <ul>
       <% educations.items.forEach(item => { %>
         <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
@@ -92,9 +92,9 @@
   </section>
 <% } %>
 
-<% if (typeof projects !== 'undefined' && projects.items && projects.items.length) { %>
+<% if (projects?.items?.length) { %>
   <section>
-    <h3><%= projects.title %></h3>
+    <h3><%= titles.projects %></h3>
     <ul>
       <% projects.items.forEach(item => { %>
         <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
@@ -103,9 +103,9 @@
   </section>
 <% } %>
 
-<% if (typeof languages !== 'undefined' && languages.items && languages.items.length) { %>
+<% if (languages?.items?.length) { %>
   <section>
-    <h3><%= languages.title %></h3>
+    <h3><%= titles.languages %></h3>
     <ul>
       <% languages.items.forEach(item => { %>
         <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
@@ -114,9 +114,9 @@
   </section>
 <% } %>
 
-<% if (typeof skills !== 'undefined' && skills.items && skills.items.length) { %>
+<% if (skills?.items?.length) { %>
   <section>
-    <h3><%= skills.title %></h3>
+    <h3><%= titles.skills %></h3>
     <ul>
       <% skills.items.forEach(item => { %>
         <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
@@ -125,9 +125,9 @@
   </section>
 <% } %>
 
-<% if (typeof soft_skills !== 'undefined' && soft_skills.items && soft_skills.items.length) { %>
+<% if (soft_skills?.items?.length) { %>
   <section>
-    <h3><%= soft_skills.title %></h3>
+    <h3><%= titles.soft_skills %></h3>
     <ul>
       <% soft_skills.items.forEach(item => { %>
         <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
@@ -136,9 +136,9 @@
   </section>
 <% } %>
 
-<% if (typeof certifications !== 'undefined' && certifications.items && certifications.items.length) { %>
+<% if (certifications?.items?.length) { %>
   <section>
-    <h3><%= certifications.title %></h3>
+    <h3><%= titles.certifications %></h3>
     <ul>
       <% certifications.items.forEach(item => { %>
         <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
@@ -147,9 +147,9 @@
   </section>
 <% } %>
 
-<% if (typeof hobbies !== 'undefined' && hobbies.items && hobbies.items.length) { %>
+<% if (hobbies?.items?.length) { %>
   <section>
-    <h3><%= hobbies.title %></h3>
+    <h3><%= titles.hobbies %></h3>
     <ul>
       <% hobbies.items.forEach(item => { %>
         <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>

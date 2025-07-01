@@ -62,20 +62,17 @@ ${JSON.stringify(offerData, null, 2)}
 Guidelines:
 - Use only information present in the CV.
 - Reformulate for clarity, professionalism and relevance to the job.
-- Detect the CV’s main language and keep all text and titles in that language.
-- Set section titles for skills/soft skills as follows:
-    • French → "COMPÉTENCES TECHNIQUES" & "Atouts"
-    • Otherwise → "Technical Skills" & "Soft Skills"
-- List **skills** and **soft skills** as single keywords or noun phrases only.
+- Detect the CV’s main language.
+- At the end of your JSON output, include a field "language" with the ISO code of the detected CV language (e.g., "fr" or "en").
+- List **skills** and **soft_skills** as single keywords or noun phrases only.
 - Highlight skills present in both CV and offer with **bold**.
 - Group technical skills by category when relevant.
-- For experiences/educations/projects use exactly:
+- For experiences, educations and projects use exactly:
     [Entity], [Start – End] : [Description]
 - Output only the final structured result (function_call will handle formatting).
-
-
 `;
 }
+
 
 function sanitizeCvText(raw) {
     return raw
@@ -305,68 +302,61 @@ exports.reformulateResume = async (req, res) => {
                     parameters: {
                         type: 'object',
                         properties: {
-                            full_name:         { type: 'string' },
-                            contact_block:     { type: 'string' },
-                            cv_title:          { type: 'string' },
-                            profile:           { type: 'string' },
+                            language: { type: 'string', description: 'ISO code of the detected CV language (e.g., "fr" or "en")' },
+                            full_name:    { type: 'string' },
+                            contact_block:{ type: 'string' },
+                            cv_title:     { type: 'string' },
+                            profile:      { type: 'string' },
                             skills: {
                                 type: 'object',
                                 properties: {
-                                    title: { type: 'string' },
                                     items: { type: 'array', items: { type: 'string' } }
                                 }
                             },
                             soft_skills: {
                                 type: 'object',
                                 properties: {
-                                    title: { type: 'string' },
                                     items: { type: 'array', items: { type: 'string' } }
                                 }
                             },
                             languages: {
                                 type: 'object',
                                 properties: {
-                                    title: { type: 'string' },
                                     items: { type: 'array', items: { type: 'string' } }
                                 }
                             },
                             experiences: {
                                 type: 'object',
                                 properties: {
-                                    title: { type: 'string' },
                                     items: { type: 'array', items: { type: 'string' } }
                                 }
                             },
                             educations: {
                                 type: 'object',
                                 properties: {
-                                    title: { type: 'string' },
                                     items: { type: 'array', items: { type: 'string' } }
                                 }
                             },
                             projects: {
                                 type: 'object',
                                 properties: {
-                                    title: { type: 'string' },
                                     items: { type: 'array', items: { type: 'string' } }
                                 }
                             },
                             certifications: {
                                 type: 'object',
                                 properties: {
-                                    title: { type: 'string' },
                                     items: { type: 'array', items: { type: 'string' } }
                                 }
                             },
                             hobbies: {
                                 type: 'object',
                                 properties: {
-                                    title: { type: 'string' },
                                     items: { type: 'array', items: { type: 'string' } }
                                 }
                             }
                         },
-                        required: ['full_name', 'cv_title', 'contact_block']
+                        required: ['language', 'full_name', 'cv_title', 'contact_block']
                     }
                 }
             ],
