@@ -50,7 +50,7 @@ function buildReformulationPrompt(cvData, offerData) {
     return `
 You are an experienced HR professional and resume consultant.
 
-Your task is to generate a structured and improved version of the candidate’s resume using the structured CV and job offer data provided below.
+Your task is to generate a structured, personalized version of the candidate’s resume that is closely aligned with the job offer, using the structured CV and job offer data provided below.
 
 Candidate Data:
 ${JSON.stringify(cvData, null, 2)}
@@ -60,21 +60,18 @@ ${JSON.stringify(offerData, null, 2)}
 
 
 Guidelines:
-- Do NOT invent or add information. Use only what is explicitly or implicitly present in the CV.
-- Reformulate the content to improve clarity, professionalism, and relevance to the job offer.
-- Detect the main language used in the CV content and keep all text and section titles in that language.
-- Highlight skills that are present in both the CV and the job offer using **bold** formatting.
-- Group technical skills by category when applicable.
-- For the **skills** section, list only keywords or noun phrases (no full sentences) - important !!
-- **For the soft_skills section only**, use single keywords or noun phrases, avoid verbs or descriptive sentences entirely.
-- If the detected main language is French, use **"Atouts"** as the category title for soft_skills.
-- Ensure consistent tone, grammar, and logical order.
+- Use only information present in the CV.
+- Reformulate for clarity, professionalism and relevance to the job.
+- Detect the CV’s main language and keep all text and titles in that language.
+- Set section titles for skills/soft skills as follows:
+    • French → "COMPÉTENCES TECHNIQUES" & "Atouts"
+    • Otherwise → "Technical Skills" & "Soft Skills"
+- List **skills** and **soft skills** as single keywords or noun phrases only.
+- Highlight skills present in both CV and offer with **bold**.
+- Group technical skills by category when relevant.
+- For experiences/educations/projects use exactly:
+    [Entity], [Start – End] : [Description]
 - Output only the final structured result (function_call will handle formatting).
-
-Important formatting rule:
-For each item in "experiences", "educations", and "projects", always use the following format exactly:
-
-[Company or Institution], [Start date - End date] : [Description of the experience or project]
 
 
 `;
