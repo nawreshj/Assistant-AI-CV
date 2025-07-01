@@ -65,6 +65,9 @@ Guidelines:
 - Detect the main language used in the CV content and keep all text and section titles in that language.
 - Highlight skills that are present in both the CV and the job offer using **bold** formatting.
 - Group technical skills by category when applicable.
+- For the **skills** section, list only keywords or noun phrases (no full sentences) - important !!
+- **For the soft_skills section only**, use single keywords or noun phrases, avoid verbs or descriptive sentences entirely.
+- If the detected main language is French, use **"Atouts"** as the category title for soft_skills.
 - Ensure consistent tone, grammar, and logical order.
 - Output only the final structured result (function_call will handle formatting).
 
@@ -76,8 +79,6 @@ For each item in "experiences", "educations", and "projects", always use the fol
 
 `;
 }
-
-
 
 function sanitizeCvText(raw) {
     return raw
