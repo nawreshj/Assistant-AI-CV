@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <title><%= full_name %> – <%= cv_title %></title>
+    <style>
+        /* Reset global */
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Corps */
+        body {
+            font-family: Arial, sans-serif;
+            color: #2c3e50;
+            background-color: #fff;
+            line-height: 1.5;
+        }
+
+        /* 1) Bandeau bleu en full-width */
+        .cv-header {
+            background-color: #323a4e;
+            color: #fff;
+            text-align: center;
+            padding: 40px 0;      /* bandeau plus fin */
+        }
+        .cv-header h1 {
+            margin: 0;
+            font-size: 28px;      /* titre un peu plus petit */
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .cv-header h2 {
+            margin: 4px 0 0;
+            font-size: 14px;      /* sous-titre plus petit */
+            font-weight: normal;
+            letter-spacing: 0.5px;
+        }
+
+        /* Frame principale : sidebar + contenu */
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background-color: #f7f7f7;
+            /* 50px en haut pour compenser le margin-top de h3 dans .content */
+            padding: 120px 30px 30px;
+            overflow-y: auto;
+        }
+
+        .sidebar section {
+            margin-bottom: 6px;   /* espace réduit entre blocs */
+        }
+        .sidebar h3 {
+            font-size: 13px;
+            color: #555;
+            margin: 0 0 6px 0;    /* plus de margin-top, petit margin-bottom */
+            padding-bottom: 4px;
+            border-bottom: 2px solid #323a4e;
+            text-transform: uppercase;
+        }
+        .contact-block {
+            font-size: 13px;
+            /* white-space non nécessaire ici si tu gères déjà les retours */
+            margin-top: 8px;     /* espace sous “Contact” */
+        }
+        .sidebar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .sidebar li {
+            position: relative;
+            padding-left: 14px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #444;
+        }
+        .sidebar li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 16px;
+            color: #323a4e;
+        }
+
+        /* Contenu principal */
+        .content {
+            padding: 30px;
+            font-size: 13px;      /* taille uniforme */
+        }
+        .content h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            margin: 20px 0 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #323a4e;
+            color: #323a4e;
+        }
+        .content section {
+            margin-bottom: 20px;
+        }
+        .content ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .content li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .item-entity {
+            font-weight: bold;
+            color: #323a4e;
+            margin: 0 0 4px;
+        }
+        .item-desc {
+            display: block;
+            margin-left: 1em;  /* pour indenter un peu la description */
+            color: #2c3e50;    /* texte normal */
+        }
+
+        .item-date {
+            font-size: 12px;
+            margin-bottom: 4px;
+            font-style: italic;
+            color: #666;
+            margin: 0 0 4px;   /* petit séparateur avant la description */
+        }
+
+        /* Imprimer les fonds */
+        @media print {
+            .cv-header, .sidebar {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .content section {
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+            }
+
+            /* 2/ On interdit seulement la coupure DANS chaque item */
+            .timeline-item,
+            .project-item {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            /* 1) Définition des marges pour toutes les pages */
+            @page {
+                margin: 5mm 0mm 0mm 0mm;
+            }
+
+            /* 2) Sur la première page, tu peux choisir une marge-top plus petite si tu veux
+               que ton bandeau bleu colle vraiment le bord (optionnel) */
+            @page :first {
+                margin-top: 0;
+            }
+
+        }
+    </style>
+</head>
+<body>
+
+<!-- Bandeau plein-largeur -->
+<header class="cv-header">
+    <h1><%= full_name %></h1>
+    <h2><%= cv_title %></h2>
+</header>
+
+<!-- Grille principale -->
+<div class="container">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <% if (contact_block) { %>
+            <section class="contact">
+                <h3><%= titles.contact || 'Contact' %></h3>
+                <p class="contact-block">
+                    <%- contact_block.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %>
+                </p>
+            </section>
+        <% } %>
+
+        <% if (skills?.items?.length) { %>
+            <section class="skills">
+                <h3><%= titles.skills %></h3>
+                <ul>
+                    <% skills.items.forEach(item => { %>
+                        <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+                    <% }) %>
+                </ul>
+            </section>
+        <% } %>
+
+        <% if (soft_skills?.items?.length) { %>
+            <section class="soft-skills">
+                <h3><%= titles.soft_skills %></h3>
+                <ul>
+                    <% soft_skills.items.forEach(item => { %>
+                        <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+                    <% }) %>
+                </ul>
+            </section>
+        <% } %>
+
+        <% if (languages?.items?.length) { %>
+            <section class="languages">
+                <h3><%= titles.languages %></h3>
+                <ul>
+                    <% languages.items.forEach(item => { %>
+                        <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+                    <% }) %>
+                </ul>
+            </section>
+        <% } %>
+
+        <% if (hobbies?.items?.length) { %>
+            <section class="hobbies">
+                <h3><%= titles.hobbies %></h3>
+                <ul>
+                    <% hobbies.items.forEach(item => { %>
+                        <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+                    <% }) %>
+                </ul>
+            </section>
+        <% } %>
+    </aside>
+
+    <!-- Contenu principal -->
+    <main class="content">
+        <% if (profile) { %>
+            <section class="profile">
+                <h3><%= titles.profile %></h3>
+                <p><%- profile %></p>
+            </section>
+        <% } %>
+
+            <% if (experiences?.items?.length) { %>
+                <section class="experiences">
+                    <h3><%= titles.experiences %></h3>
+                    <% experiences.items.forEach(item => {
+                        const parts     = item.split(':');
+                        const headerRaw = parts.shift().trim();
+                        const desc      = parts.join(':').trim();
+                        const [entity, date] = headerRaw.split(',').map(s => s.trim());
+                    %>
+                    <div class="timeline-item">
+                        <h4 class="item-entity"><%- entity %></h4>
+                        <div class="item-date"><%- date %></div>
+                        <li> <%- desc.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+                    </div>
+                    <% }) %>
+                </section>
+            <% } %>
+
+
+        <% if (educations?.items?.length) { %>
+                <section class="educations">
+                    <h3><%= titles.educations %></h3>
+                    <% educations.items.forEach(item => {
+                        const parts     = item.split(':');
+                        const headerRaw = parts.shift().trim();
+                        const desc      = parts.join(':').trim();
+                        const [entity, date] = headerRaw.split(',').map(s => s.trim());
+                    %>
+                    <div class="timeline-item">
+                        <h4 class="item-entity"><%- entity %></h4>
+                        <div class="item-date"><%- date %></div>
+                        <li> <%- desc.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+                    </div>
+                    <% }) %>
+                </section>
+            <% } %>
+
+            <% if (projects?.items?.length) { %>
+                <section class="projects">
+                    <h3><%= titles.projects %></h3>
+                    <% projects.items.forEach(item => {
+                        const parts     = item.split(':');
+                        const headerRaw = parts.shift().trim();
+                        const desc      = parts.join(':').trim();
+                        const [entity, date] = headerRaw.split(',').map(s => s.trim());
+                    %>
+                    <div class="timeline-item">
+                        <h4 class="item-entity"><%- entity %></h4>
+                        <div class="item-date"><%- date %></div>
+                        <li> <%- desc.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+                    </div>
+                    <% }) %>
+                </section>
+            <% } %>
+
+        <% if (certifications?.items?.length) { %>
+            <section class="certifications">
+                <h3><%= titles.certifications %></h3>
+                <ul>
+                    <% certifications.items.forEach(item => { %>
+                        <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+                    <% }) %>
+                </ul>
+            </section>
+        <% } %>
+    </main>
+
+</div>
+</body>
+</html>

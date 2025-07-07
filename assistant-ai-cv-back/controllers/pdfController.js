@@ -4,14 +4,14 @@ const puppeteer = require('puppeteer');
 const sectionTitles = {
     fr: {
         profile: "Profil",
-        skills:         "Competences Techniques",
+        skills:         "Compétences Techniques",
         soft_skills:    "Atouts",
         languages:      "Langues",
-        experiences:    "Expériences",
+        experiences:    "Experiences",
         educations:     "Formations",
         projects:       "Projets",
         certifications: "Certifications",
-        hobbies:        "Centres d’intérêt"
+        hobbies:        "Loisirs"
     },
     en: {
         profile:"Profile",
@@ -40,7 +40,7 @@ async function generatePdf(req, res, next) {
         const renderData = { ...structuredCV, titles };
 
         // 2) Chemin vers le template
-        const templatePath = path.join(__dirname, '../views/cvTemplate.ejs');
+        const templatePath = path.join(__dirname, '../views/cvTemplatebis.ejs');
         console.log('🔗 templatePath :', templatePath);
 
         // 3) Rend le HTML

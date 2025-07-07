@@ -45,7 +45,7 @@ exports.getCvHtml = async (req, res, next) => {
 
 
         // 2) Construction du chemin vers le fichier de template EJS
-        const templatePath = path.join(__dirname, '../views/cvTemplate.ejs');
+        const templatePath = path.join(__dirname, '../views/cvTemplatebis.ejs');
         console.log('🔗 Template EJS path:', templatePath);
 
         // 3) Rend le template en HTML string

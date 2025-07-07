@@ -155,7 +155,7 @@ const EditPage = ({ structuredCV, onChange, onBack, onGenerate }) => {
             })}
 
             <div className="edit-actions">
-                <button onClick={onBack} className="btn btn-secondary">Retour</button>
+                <button onClick={onBack} className="btn btn-secondary">Aperçu</button>
                 <button onClick={onGenerate} className="btn btn-primary">
                     Générer le CV en PDF
                 </button>
