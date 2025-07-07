@@ -2,10 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/EditPage.css';
 
-const specialSections = ['languages', 'skills', 'soft_skills', 'hobbies'];
-
-
-
+const specialSections = ['skills', 'soft_skills', 'hobbies', 'certifications'];
 
 const EditPage = ({ structuredCV, onChange, onBack, onGenerate }) => {
     // État d'ouverture des sections
@@ -44,92 +41,104 @@ const EditPage = ({ structuredCV, onChange, onBack, onGenerate }) => {
         onChange(updated);
     };
 
+    const handleRemoveItem = (section, index) => {
+        const updated = { ...structuredCV };
+        if (Array.isArray(updated[section].items)) {
+            updated[section].items.splice(index, 1);
+            onChange(updated);
+        }
+    };
+
     const labelFor = key => {
         switch (key) {
-            case 'full_name': return 'Nom complet';
-            case 'cv_title':  return 'Titre du CV';
-            case 'profile':   return 'Profil';
+            case 'full_name':     return 'Nom complet';
+            case 'cv_title':      return 'Titre du CV';
+            case 'profile':       return 'Profil';
+            case 'experiences':   return 'Expériences';
+            case 'educations':    return 'Formations';
+            case 'projects':      return 'Projets';
+            case 'languages':     return 'Langues';
+            case 'skills':        return 'Compétences techniques';
+            case 'soft_skills':   return 'Atouts';
+            case 'certifications':return 'Certifications';
+            case 'hobbies':       return 'Centres d’intérêt';
             default:
                 return structuredCV[key]?.title || key;
         }
     };
 
-
-
     return (
         <div className="edit-container">
             <h2>✏️ Modifier le CV</h2>
 
-            {Object.entries(structuredCV).map(([sectionKey, sectionValue]) => (
-                <div className="accordion-section" key={sectionKey}>
-                    <div
-                        className="accordion-header"
-                        onClick={() => toggleSection(sectionKey)}
-                    >
-                        <span>{labelFor(sectionKey)}</span>
-                        <span className={`arrow ${expanded[sectionKey] ? 'open' : ''}`}>⌄</span>
-                    </div>
+            {Object.entries(structuredCV).map(([sectionKey, sectionValue]) => {
+                // On ignore le champ language
+                if (sectionKey === 'language') return null;
 
-                    {expanded[sectionKey] && (
-                        <div className="accordion-content">
-                            {/* Champs simples */}
-                            {typeof sectionValue === 'string' && (
-                                sectionKey === 'profile' ? (
-                                    <textarea
-                                        className="regular-textarea"
-                                        rows={4}
-                                        value={sectionValue}
-                                        onChange={e => handleChange(sectionKey, null, e.target.value)}
-                                    />
-                                ) : (
-                                    <input
-                                        type="text"
-                                        className="long-input"
-                                        size={78}
-                                        value={sectionValue}
-                                        onChange={e => handleChange(sectionKey, null, e.target.value)}
-                                    />
-                                )
-                            )}
+                return (
+                    <div className="accordion-section" key={sectionKey}>
+                        <div
+                            className="accordion-header"
+                            onClick={() => toggleSection(sectionKey)}
+                        >
+                            <span>{labelFor(sectionKey)}</span>
+                            <span className={`arrow ${expanded[sectionKey] ? 'open' : ''}`}>⌄</span>
+                        </div>
 
-                            {/* Sections à items */}
-                            {typeof sectionValue === 'object' && (
-                                <>
-                                    {/* Titre éditable */}
-                                        <label htmlFor={`${sectionKey}-title`} className="section-title-label">
-                                            Modifier le titre de la section:
-                                        </label>
-                                        <input
-                                            id={`${sectionKey}-title`}
-                                            className="section-title long-input"
-                                            type="text"
-                                            size={100}
-                                            value={sectionValue.title || ''}
-                                            onChange={e => handleChange(sectionKey, 'title', e.target.value)}
+                        {expanded[sectionKey] && (
+                            <div className="accordion-content">
+                                {/* Champs simples */}
+                                {typeof sectionValue === 'string' && (
+                                    sectionKey === 'profile' ? (
+                                        <textarea
+                                            className="regular-textarea"
+                                            rows={4}
+                                            value={sectionValue}
+                                            onChange={e => handleChange(sectionKey, null, e.target.value)}
                                         />
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            className="long-input"
+                                            size={78}
+                                            value={sectionValue}
+                                            onChange={e => handleChange(sectionKey, null, e.target.value)}
+                                        />
+                                    )
+                                )}
 
-                                    {/* 1) Itère sur au plus [], jamais sur undefined */}
+                                {/* Sections à items */}
+                                {typeof sectionValue === 'object' && (
+                                    <>
+                                        {/* Affiche les items existants avec bouton Supprimer */}
                                         {(sectionValue.items || []).map((item, idx) => (
-                                            specialSections.includes(sectionKey) ? (
-                                                <input
-                                                    key={idx}
-                                                    type="text"
-                                                    className="item-input large-input"
-                                                    value={item}
-                                                    onChange={e => handleChange(sectionKey, idx, e.target.value)}
-                                                />
-                                            ) : (
-                                                <textarea
-                                                    key={idx}
-                                                    className="regular-textarea"
-                                                    rows={3}
-                                                    value={item}
-                                                    onChange={e => handleChange(sectionKey, idx, e.target.value)}
-                                                />
-                                            )
+                                            <div className="item-row" key={idx}>
+                                                {specialSections.includes(sectionKey) ? (
+                                                    <input
+                                                        type="text"
+                                                        className="item-input large-input"
+                                                        value={item}
+                                                        onChange={e => handleChange(sectionKey, idx, e.target.value)}
+                                                    />
+                                                ) : (
+                                                    <textarea
+                                                        className="regular-textarea"
+                                                        rows={2}
+                                                        value={item}
+                                                        onChange={e => handleChange(sectionKey, idx, e.target.value)}
+                                                    />
+                                                )}
+                                                <button
+                                                    type="button"
+                                                    className="btn-remove-item"
+                                                    onClick={() => handleRemoveItem(sectionKey, idx)}
+                                                >
+                                                    ❌
+                                                </button>
+                                            </div>
                                         ))}
 
-                                        {/* 2) + Ajouter toujours visible */}
+                                        {/* Bouton + Ajouter */}
                                         <button
                                             type="button"
                                             className="btn-add-item"
@@ -137,19 +146,19 @@ const EditPage = ({ structuredCV, onChange, onBack, onGenerate }) => {
                                         >
                                             + Ajouter
                                         </button>
-                                </>
-                            )}
-
-
-
-                        </div>
-                    )}
-                </div>
-            ))}
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
 
             <div className="edit-actions">
                 <button onClick={onBack} className="btn btn-secondary">Retour</button>
-                <button onClick={onGenerate} className="btn btn-primary">Générer le CV en PDF</button>
+                <button onClick={onGenerate} className="btn btn-primary">
+                    Générer le CV en PDF
+                </button>
             </div>
         </div>
     );
