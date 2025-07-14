@@ -5,7 +5,7 @@ const {
     extractOffer,
     reformulateResume,
     extractBoth
-} = require('../controllers/gptController');
+} = require('../controllers/gptControllerBis');
 
 router.post('/extract-both',extractBoth);
 router.post('/reformulate-resume', reformulateResume);

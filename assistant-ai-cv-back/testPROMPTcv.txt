@@ -1,0 +1,413 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { InjectModel } from '@nestjs/mongoose';
+import { OpenAI } from 'openai';
+import { OpenAIUsage } from './schema/openai.usage.schema';
+import { Model } from 'mongoose';
+
+@Injectable()
+export class OpenAiService {
+  logger = new Logger(OpenAiService.name);
+  client: OpenAI;
+  constructor(
+    private configService: ConfigService,
+    @InjectModel(OpenAIUsage.name)
+    private readonly openAIUsageModel: Model<OpenAIUsage>,
+  ) {
+    this.client = new OpenAI({
+      apiKey: this.configService.getOrThrow<string>('OPENAI_API_KEY'),
+    });
+  }
+
+  private sanitizeText(text: string): string {
+    return text
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '') // Remove control characters
+      .replace(/\\/g, '\\\\') // Escape backslashes
+      .replace(/"/g, '\\"') // Escape double quotes
+      .replace(/\n/g, '\\n') // Escape newlines
+      .replace(/\r/g, '\\r') // Escape carriage returns
+      .replace(/\t/g, '\\t'); // Escape tabs
+  }
+
+  private isValidJson(str: string): { valid: boolean; cleaned?: string } {
+    try {
+      JSON.parse(str);
+      return { valid: true, cleaned: str };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      const cleaned = str
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '') // Remove invalid control characters
+        .trim()
+        .replace(/^```json\n|```$/g, '') // Remove markdown
+        .replace(/^\s*[\{\[]/, '{') // Ensure starts with { or [
+        .replace(/[\}\]]\s*$/, '}'); // Ensure ends with } or ]
+      try {
+        JSON.parse(cleaned);
+        return { valid: true, cleaned };
+      } catch (cleanError) {
+        this.logger.error('Failed to parse cleaned JSON', cleanError);
+        return { valid: false };
+      }
+    }
+  }
+
+  async processCV(text: string): Promise<any> {
+    try {
+      const sanitizedText = this.sanitizeText(text);
+      this.logger.log('process start');
+      const startTime = Date.now();
+      const response = await this.client.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a resume parsing AI that extracts structured data in JSON format. Return JSON only, without markdown formatting or code blocks. Pay special attention to extracting meaningful keywords and projects from the CV.',
+          },
+          { role: 'user', content: this.getPromptText(sanitizedText) },
+        ],
+        temperature: 0.2, // Low temperature for consistency
+      });
+      const endTime = Date.now();
+      const timeToProcess = endTime - startTime; // Calculate time taken to process
+
+      this.logger.log('process end');
+
+      const rawContent = response.choices[0].message.content;
+
+      const jsonValidation = this.isValidJson(rawContent);
+
+      if (!jsonValidation.valid) {
+        this.logger.error('Invalid JSON response from OpenAI', rawContent);
+        return {
+          valid: false,
+          validation_message: 'Invalid JSON response from OpenAI',
+        };
+      }
+
+      const schema = new this.openAIUsageModel({
+        model: 'gpt-4o-mini',
+        usage: response.usage,
+        time_to_process: timeToProcess,
+      });
+
+      await schema.save();
+
+      const extractedJSON =
+        jsonValidation.cleaned || response.choices[0].message.content;
+      const parsedResponse = JSON.parse(extractedJSON);
+
+      // Ensure keywords are extracted if none were returned
+      if (!parsedResponse.keywords || parsedResponse.keywords.length === 0) {
+        this.logger.log(
+          'No keywords found in initial response, extracting keywords separately',
+        );
+        // Extract keywords in a separate call if needed
+        const keywordsResult = await this.extractKeywords(sanitizedText);
+        parsedResponse.keywords = keywordsResult.keywords || [];
+      }
+
+      // New: Ensure projects are extracted if none were returned
+      if (!parsedResponse.projects || parsedResponse.projects.length === 0) {
+        this.logger.log(
+          'No projects found in initial response, extracting projects separately',
+        );
+        // Extract projects in a separate call
+        const projectsResult = await this.extractProjects(sanitizedText);
+        parsedResponse.projects = projectsResult.projects || [];
+      }
+
+      return parsedResponse;
+    } catch (error) {
+      if (error instanceof OpenAI.APIError) {
+        switch (error.status) {
+          case 400:
+            return {
+              valid: false,
+              validation_message:
+                'Invalid request. Please check the input text.',
+            };
+          case 401:
+            return {
+              valid: false,
+              validation_message: 'Unauthorized. Please check your API key.',
+            };
+
+          case 403:
+            return {
+              valid: false,
+              validation_message:
+                'Forbidden. Please check your API key permissions.',
+            };
+          case 429:
+            return {
+              valid: false,
+              validation_message:
+                'Rate limit exceeded. Please wait and retry later.',
+            };
+
+          case 500:
+            return {
+              valid: false,
+              validation_message:
+                'Internal server error. Please try again later.',
+            };
+          default:
+            return { valid: false, validation_message: 'Error processing CV' };
+        }
+      }
+      this.logger.error(error);
+      return { valid: false, validation_message: 'Error processing CV' };
+    }
+  }
+
+  // Existing method for keyword extraction
+  async extractKeywords(text: string): Promise<any> {
+    try {
+      const response = await this.client.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are an AI specialized in keyword extraction from resumes. Return ONLY a valid JSON object with keywords.',
+          },
+          {
+            role: 'user',
+            content: `
+              Extract the most important keywords from this CV text. Focus on skills, technologies, domains, methodologies, and industry-specific terms.
+
+              For each keyword:
+              1. Assign a relevance score (0.0 to 1.0) based on how central it is to the candidate's profile
+              2. Only include significant keywords (score > 0.5)
+              3. Return at least 5-10 keywords if possible
+
+              Return ONLY a JSON object in this format:
+              {"keywords": [{"keyword": "Keyword1", "relevance_score": 0.9}, {"keyword": "Keyword2", "relevance_score": 0.8}]}
+
+              CV text:
+              "${text}"
+            `,
+          },
+        ],
+        temperature: 0.3,
+      });
+
+      const rawContent = response.choices[0].message.content;
+      const jsonValidation = this.isValidJson(rawContent);
+
+      if (!jsonValidation.valid) {
+        this.logger.error(
+          'Invalid JSON response from keyword extraction',
+          rawContent,
+        );
+        return { keywords: [] };
+      }
+
+      return JSON.parse(jsonValidation.cleaned || rawContent);
+    } catch (error) {
+      this.logger.error('Error extracting keywords', error);
+      return { keywords: [] };
+    }
+  }
+
+  // New method to extract projects as a fallback
+  async extractProjects(text: string): Promise<any> {
+    try {
+      const response = await this.client.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are an AI specialized in extracting project information from resumes. Return ONLY a valid JSON object with projects.',
+          },
+          {
+            role: 'user',
+            content: `
+              Extract all project information from this CV text. Projects can be mentioned explicitly in "Project" sections,
+              or implied within work experience descriptions, technical experience, or portfolio sections.
+
+              For each project identified:
+              1. Extract as much detail as possible (title, description, technologies used, dates, impact)
+              2. Infer project roles when not explicitly stated
+              3. Include URLs if present
+
+              Return ONLY a JSON object in this format:
+              {
+                "projects": [
+                  {
+                    "title": "Project title",
+                    "description": "Short description (max 200 characters)",
+                    "role": "Role in the project",
+                    "project_url": "Project URL if available",
+                    "impact": "Project impact (max 200 characters)",
+                    "technologies_used": ["Technology 1", "Technology 2"],
+                    "start_date": "YYYY-MM-DD or null if unavailable",
+                    "end_date": "YYYY-MM-DD or '9999-12-31' if ongoing, null if unavailable",
+                    "client_or_employer": "Client or employer name if applicable"
+                  }
+                ]
+              }
+
+              CV text:
+              "${text}"
+            `,
+          },
+        ],
+        temperature: 0.3,
+      });
+
+      const rawContent = response.choices[0].message.content;
+      const jsonValidation = this.isValidJson(rawContent);
+
+      if (!jsonValidation.valid) {
+        this.logger.error(
+          'Invalid JSON response from project extraction',
+          rawContent,
+        );
+        return { projects: [] };
+      }
+
+      return JSON.parse(jsonValidation.cleaned || rawContent);
+    } catch (error) {
+      this.logger.error('Error extracting projects', error);
+      return { projects: [] };
+    }
+  }
+
+  getPromptText(text: string) {
+    return `
+      You are an AI specialized in extracting structured information from resumes. Your task is to analyze the given CV text, extract relevant details, and return a structured JSON object.
+
+      **CRITICAL INSTRUCTIONS**:
+      - Return ONLY a valid, parseable JSON object. The response must start with '{' and end with '}'.
+      - Do NOT include any explanations, markdown (e.g., \`\`\`json), code blocks, or extra text outside the JSON.
+      - Ensure all string values are properly escaped (e.g., quotes as \", backslashes as \\, newlines as \\n).
+      - Remove or escape any control characters (ASCII 0-31, except tab, newline, carriage return).
+      - Do NOT include duplicate keys in any object (e.g., multiple "name" keys in a skill object).
+      - Ensure each skill in the "skills" array is unique (no duplicate skill names).
+      - If the CV is invalid or missing required fields, return a JSON object with "valid": false and a "validation_message".
+      - Ensure all property names and string values use double quotes.
+      - Use null for missing fields instead of empty strings.
+      - Return empty arrays [] for sections with no data.
+      - Ensure date formats are consistent (YYYY-MM-DD) and valid date else fix to valid date or null.
+      - Always translate and output all field values (skills, job titles, degrees, etc.) in **English**, regardless of the original CV language.
+      - IMPORTANT: Extract meaningful keywords from the CV text. For each keyword, assign a relevance score between 0.0 and 1.0.
+      - CRITICAL: Thoroughly search for and extract all project information, whether explicitly listed in project sections or mentioned within work experience, education, or other sections.
+
+      **Required Fields for Validity**:
+
+      If any of the following are missing, you must return "valid": false:
+
+      - At least have: Full Name , First Name , Last Name
+      - At least one: Email or Phone
+      - At least one: Education, Experience, or Skills
+
+      **Fallback Response (if CV is invalid)**:
+      {
+        "valid": false,
+        "validation_message": "Missing required fields: [list missing fields, e.g., 'name, email, phone, education, experience, skills']",
+        "cv_metadata": {"cv_text": "", "cv_language": "", "summary": ""},
+        "candidate": {"full_name": null, "first_name": null, "last_name": null, "email": null, "phone": null, "birth_date": null, "address": null, "country_code": null, "country_name": null, "industry": null, "experience_years": 0},
+        "social_media": [],
+        "education": [],
+        "experience": [],
+        "skills": [],
+        "keywords": [],
+        "certifications": [],
+        "projects": []
+      }
+
+      JSON response format:
+      {
+        "valid": true,
+        "validation_message": null,
+        "cv_metadata": {
+          "cv_text": "Full text extracted from the CV",
+          "cv_language": "Detected language (ISO 639-1 code, e.g., 'en', 'fr')",
+          "summary": "Brief professional summary (max 200 characters)"
+        },
+        "candidate": {
+          "full_name": "Extracted full name",
+          "first_name": "First name",
+          "last_name": "Last name",
+          "email": "Valid email address",
+          "phone": "Phone number in E.164 format (e.g., +14155552671)",
+          "birth_date": "YYYY-MM-DD format or null if unavailable",
+          "address": "Extracted address",
+          "country_code": "ISO 3166 country code (e.g., 'US', 'CA')",
+          "country_name": "Full country name (e.g., 'United States')",
+          "industry": "Industry (SIC standard) based on the CV",
+          "experience_years": "Total years of experience (integer)"
+        },
+        "social_media": [
+          {
+            "platform": "LinkedIn, GitHub, etc.",
+            "url": "Valid profile URL"
+          }
+        ],
+        "education": [
+          {
+            "degree": "Degree title based on ISCED standard",
+            "degree_Level": "ISCED Level",
+            "degree_type": "Degree classification",
+            "field_of_study": "Standardized field of study",
+            "institution": "University or school name",
+            "institution_type": "Type of institution",
+            "country": "ISO 3166-1 country code",
+            "education_framework": "Qualification framework used",
+            "graduation_year": "YYYY (if available)"
+          }
+        ],
+        "experience": [
+          {
+            "company_name": "Company name",
+            "industry": "Industry (SIC standard)",
+            "country": "ISO 3166 country code",
+            "job_title": "Job title",
+            "start_date": "YYYY-MM-DD",
+            "end_date": "YYYY-MM-DD or '9999-12-31' if current",
+            "description": "Key job responsibilities (max 300 characters)"
+          }
+        ],
+        "skills": [
+          {
+            "name": "Skill name (must be unique within the array)",
+            "category": "Skill category (ISCO standard)"
+          }
+        ],
+        "keywords": [
+          {
+            "keyword": "Important keyword extracted from CV (e.g., technologies, platforms, domains, methods)",
+            "relevance_score": "Float value between 0 and 1 indicating how central this keyword is to the candidate's profile"
+          }
+        ],
+        "certifications": [
+          {
+            "name": "Certification name",
+            "provider": "Issuer",
+            "year": "YYYY"
+          }
+        ],
+        "projects": [
+          {
+            "title": "Project title",
+            "description": "Short description (max 200 characters)",
+            "role": "Your role in the project",
+            "project_url": "Project URL",
+            "impact": "Project impact (max 200 characters)",
+            "technologies_used": ["Technology 1", "Technology 2"],
+            "start_date": "YYYY-MM-DD",
+            "end_date": "YYYY-MM-DD or '9999-12-31' if ongoing",
+            "client_or_employer": "Client or employer name (if applicable)"
+          }
+        ]
+      }
+      IMPORTANT: Pay close attention to extracting project information. Look for project details in dedicated project sections, as well as within job descriptions, personal portfolio mentions, or academic project listings. Projects are critical content that must be thoroughly extracted.
+
+      The CV text to analyze is:
+      "${text}"
+      `;
+  }
+}

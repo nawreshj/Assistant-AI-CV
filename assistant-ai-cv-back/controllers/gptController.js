@@ -37,14 +37,6 @@ ${cvText}
 }
 
 
-function buildOfferExtractionPrompt(offerText) {
-    return `
-You are an HR parsing assistant.
-Parse the raw job offer text below (variable ` + '`offerText`' + `) and return structured data via the function call.
---- Raw Job Offer Text ---
-${offerText}
-`;
-}
 
 function buildOfferExtractionPrompt(offerText) {
     return `
@@ -85,20 +77,6 @@ Guidelines:
 
 
 
-const systemMessage = {
-    role: 'system',
-    content: `
-You are an experienced HR professional and resume consultant.
-Your primary goal is to deeply personalize the candidate’s CV to the specific job offer.
-
-Formatting rules:
-- Contact block: email / address / phone
-- Skills grouped by theme; highlight common ones in bold
-- Experiences: [Entity], [Start–End] : [Description]
-- Keep descriptions concise; avoid long sentences
-- Output only JSON via function_call
-`
-};
 
 function sanitizeCvText(raw) {
     return raw
