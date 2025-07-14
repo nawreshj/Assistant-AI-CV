@@ -46,6 +46,15 @@ ${offerText}
 `;
 }
 
+function buildOfferExtractionPrompt(offerText) {
+    return `
+You are an HR parsing assistant.
+Parse the raw job offer text below (variable ` + '`offerText`' + `) and return structured data via the function call.
+--- Raw Job Offer Text ---
+${offerText}
+`;
+}
+
 function buildReformulationPrompt(cvData, offerData) {
     return `
 You are an experienced HR professional and resume consultant.
@@ -70,9 +79,26 @@ Guidelines:
 - For experiences, educations and projects use exactly:
     [Entity], [Start – End] : [Description]
 - Output only the final structured result (function_call will handle formatting).
+- If a field is not present, return an empty list for that field.
 `;
 }
 
+
+
+const systemMessage = {
+    role: 'system',
+    content: `
+You are an experienced HR professional and resume consultant.
+Your primary goal is to deeply personalize the candidate’s CV to the specific job offer.
+
+Formatting rules:
+- Contact block: email / address / phone
+- Skills grouped by theme; highlight common ones in bold
+- Experiences: [Entity], [Start–End] : [Description]
+- Keep descriptions concise; avoid long sentences
+- Output only JSON via function_call
+`
+};
 
 function sanitizeCvText(raw) {
     return raw
@@ -210,7 +236,7 @@ exports.extractBoth = async (req, res) => {
                             properties: {
                                 full_name: { type: 'string' },
                                 gender: { type: 'string', enum: ['male', 'female', 'unknown'] },
-                                contact_block: { type: 'string' },
+                                contact_block:  { type: 'array', items: { type: 'string' } },
                                 cv_title: {type:'string'},
                                 profile: { type: 'string' },
                                 skills: { type: 'array', items: { type: 'string' } },
@@ -243,7 +269,7 @@ exports.extractBoth = async (req, res) => {
                 ],
                 function_call: { name: 'extract_cv' },
                 temperature: 0,
-                max_tokens: 1000
+                max_tokens: 2000
             }),
             openai.chat.completions.create({
                 model: 'gpt-4o-mini',
@@ -292,6 +318,7 @@ exports.reformulateResume = async (req, res) => {
     try {
         console.log("Reformulation CV structurée avec GPT...");
 
+
         const response = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [{ role: 'user', content: buildReformulationPrompt(cvData, offerData) }],
@@ -304,7 +331,7 @@ exports.reformulateResume = async (req, res) => {
                         properties: {
                             language: { type: 'string', description: 'ISO code of the detected CV language (e.g., "fr" or "en")' },
                             full_name:    { type: 'string' },
-                            contact_block:{ type: 'string' },
+                            contact_block:  { type: 'array', items: { type: 'string' } },
                             cv_title:     { type: 'string' },
                             profile:      { type: 'string' },
                             skills: {
@@ -362,7 +389,7 @@ exports.reformulateResume = async (req, res) => {
             ],
             function_call: { name: 'generate_structured_cv' },
             temperature: 0.7,
-            max_tokens: 1800
+            max_tokens: 2500
         });
 
         const structuredCV = JSON.parse(response.choices[0].message.function_call.arguments);

@@ -177,12 +177,14 @@
 
     <!-- Sidebar -->
     <aside class="sidebar">
-        <% if (contact_block) { %>
-            <section class="contact">
-                <h3><%= titles.contact || 'Contact' %></h3>
-                <p class="contact-block">
-                    <%- contact_block.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %>
-                </p>
+        <% if (contact_block?.items?.length) { %>
+            <section class="skills">
+                <h3><%= titles.contact_block %></h3>
+                <ul>
+                    <% contact_block.items.forEach(item => { %>
+                        <li><%- item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+                    <% }) %>
+                </ul>
             </section>
         <% } %>
 
@@ -263,15 +265,33 @@
                 <section class="educations">
                     <h3><%= titles.educations %></h3>
                     <% educations.items.forEach(item => {
+                        // 1) Séparer header / description
                         const parts     = item.split(':');
                         const headerRaw = parts.shift().trim();
-                        const desc      = parts.join(':').trim();
-                        const [entity, date] = headerRaw.split(',').map(s => s.trim());
+                        const desc      = parts.join(':').trim() || '';
+
+                        // 2) Récupérer les 4 champs du header (avec fallback '')
+                        const headerParts   = headerRaw.split(',').map(s => s.trim());
+                        const entity        = headerParts[0] || '';
+                        const institution   = headerParts[1] || '';
+                        const place         = headerParts[2] || '';
+                        const date          = headerParts[3] || '';
                     %>
                     <div class="timeline-item">
                         <h4 class="item-entity"><%- entity %></h4>
-                        <div class="item-date"><%- date %></div>
-                        <li> <%- desc.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %></li>
+                        <% if (institution) { %>
+                            <div class="item-institution"><%- institution %></div>
+                        <% } %>
+                        <% if (place || date) { %>
+                            <div class="item-date">
+                                <%- place %><% if (place && date) { %> • <% } %><%- date %>
+                            </div>
+                        <% } %>
+                        <% if (desc) { %>
+                            <p class="item-desc">
+                                <%- desc.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') %>
+                            </p>
+                        <% } %>
                     </div>
                     <% }) %>
                 </section>

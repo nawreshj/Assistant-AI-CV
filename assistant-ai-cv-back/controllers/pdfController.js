@@ -4,6 +4,7 @@ const puppeteer = require('puppeteer');
 const sectionTitles = {
     fr: {
         profile: "Profil",
+        contact_block: "Contacts",
         skills:         "Compétences Techniques",
         soft_skills:    "Atouts",
         languages:      "Langues",
@@ -15,6 +16,7 @@ const sectionTitles = {
     },
     en: {
         profile:"Profile",
+        contact_block: "Contacts",
         skills:         "Technical Skills",
         soft_skills:    "Soft Skills",
         languages:      "Languages",

@@ -5,6 +5,7 @@ const path = require('path');           // Utils pour gérer les chemins de fich
 const sectionTitles = {
     fr: {
         profile: "Profil",
+        contact_block: "Contacts",
         skills:         "COMPÉTENCES TECHNIQUES",
         soft_skills:    "Atouts",
         languages:      "Langues",
@@ -16,6 +17,7 @@ const sectionTitles = {
     },
     en: {
         profile:"Profile",
+        contact_block: "Contacts",
         skills:         "Technical Skills",
         soft_skills:    "Soft Skills",
         languages:      "Languages",
