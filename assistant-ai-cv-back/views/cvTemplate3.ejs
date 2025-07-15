@@ -30,7 +30,7 @@
         /* Layout */
         .container { display: grid; grid-template-columns: 30% 70%; margin-top: 0px; }
         .sidebar {
-            background: #f2e8f0;
+            background: #98A1BC;
             margin-top: -120px;     /* remonte le bloc de 80px (hauteur approximative du header) */
             padding: 180px 20px 20px; /* compense ce recul pour le contenu */
         }
@@ -52,6 +52,9 @@
 
         /* Items */
         .item-container { margin-bottom: 24px; }
+        .education-item {
+            margin-bottom: 8px;  /* espace spécifique aux items de formation */
+        }
         .timeline-item, .project-item, .education-item { border-left: 2px solid #ccc; padding-left: 16px; }
         .entity { font-weight: bold; font-size: 13px; margin-bottom: 4px; }
         .item-subheader { font-size: 12px; color: #666; margin-bottom: 6px; }
@@ -117,7 +120,7 @@ function fmt(str) {
             <h3><%= titles.contact_block %></h3>
             <ul>
                 <% if (contact.email) { %><li><%= contact.email %></li><% } %>
-                <% if (contact.city && contact.postal_code) { %><li><%= contact.city %> | <%= contact.postal_code %></li><% } %>
+                <% if (contact.address) { %><li><%= contact.address %> </li><% } %>
             </ul>
         </section>
         <% if (languages?.length) { %>
@@ -161,16 +164,30 @@ function fmt(str) {
             </section>
         <% } %>
         <% if (educations?.length) { %>
-            <section>
-                <h3><%= titles.educations %></h3>
-                <% educations.forEach(ed => { %>
-                    <div class="item-container education-item">
-                        <div class="entity"><%= ed.degree %></div>
-                        <div class="item-subheader"><%= ed.institution %> | <%= fmt(ed.start_date) %> – <%= ed.end_date === 'present' ? (language === 'fr' ? 'Présent' : 'Present') : fmt(ed.end_date) %></div>
-                    </div>
-                <% }) %>
-            </section>
-        <% } %>
+                <section>
+                    <h3><%= titles.educations %></h3>
+                    <% educations.forEach(ed => { %>
+                        <div class="item-container education-item">
+                            <div class="entity"><%= ed.degree %></div>
+                            <div class="item-subheader">
+                                <%= ed.institution %> |
+                                <%= fmt(ed.start_date) %> –
+                                <%= ed.end_date === 'present'
+                                        ? (language === 'fr' ? 'Présent' : 'Present')
+                                        : fmt(ed.end_date) %>
+                            </div>
+                            <% if (ed.extra_information && ed.extra_information.length) { %>
+                                <ul class="education-extra-info">
+                                    <% ed.extra_information.forEach(info => { %>
+                                        <li><%= info %></li>
+                                    <% }) %>
+                                </ul>
+                            <% } %>
+                        </div>
+                    <% }) %>
+                </section>
+
+            <% } %>
         <% if (experiences?.length) { %>
             <section>
                 <h3><%= titles.experiences %></h3>

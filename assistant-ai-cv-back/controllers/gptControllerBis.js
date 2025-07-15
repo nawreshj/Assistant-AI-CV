@@ -54,6 +54,11 @@ CRITICAL INSTRUCTIONS:
 - For each experience and project: the goal , tasks1, task2, ... , Technologies
   all tailored to the job offer’s priorities.
 - Do NOT invent information; use only what exists in the CV or the job offer.
+- cv_title and profile must be personalised to the job offer
+- DO NOTE FORGET ANY SKILL OF THE INITIAL RESUME
+- Each item in "skills" must be a comma-separated list of skills from the same category (e.g., "Java, Python, C++");
+
+
 
 
 Schema:
@@ -64,9 +69,6 @@ Schema:
     "email": string,
     "phone": string,
     "address": string,
-    "city": string,
-    "postal_code": string,
-    "country": string,
     "linkedin": string | null,
     "github": string | null,
     "website": string | null
@@ -96,7 +98,7 @@ Schema:
     }
   ],
   "educations": [
-    { "degree": string, "institution": string, "start_date": "Month YYYY", "end_date": "YMonth YYYY" | "present" }
+    { "degree": string, "institution": string, "start_date": "Month YYYY", "end_date": "YMonth YYYY" | "present","extra_informations": string }
   ],
   "projects": [
     {
