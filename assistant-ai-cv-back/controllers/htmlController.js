@@ -38,16 +38,17 @@ const sectionTitles = {
 exports.getCvHtml = async (req, res, next) => {
     try {
         // 1) Lecture du JSON structuré envoyé par le client
+        //const structuredCV = req.body;
         const structuredCV = req.body;
         console.log('📥 getCvHtml payload:', structuredCV);
 
         const lang = structuredCV.language || 'en';
         const titles = sectionTitles[lang] || sectionTitles.en;
-        const renderData = { ...structuredCV, titles };
+        const renderData = { ...structuredCV, titles};
 
 
         // 2) Construction du chemin vers le fichier de template EJS
-        const templatePath = path.join(__dirname, '../views/cvTemplatebis.ejs');
+        const templatePath = path.join(__dirname, '../views/cvTemplate3.ejs');
         console.log('🔗 Template EJS path:', templatePath);
 
         // 3) Rend le template en HTML string

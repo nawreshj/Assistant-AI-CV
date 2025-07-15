@@ -13,7 +13,8 @@ app.use('/api/gpt', gptRoutes);
 app.use('/api/extraction', extractionRoutes);
 app.use('/api/pdf',pdfRoutes);
 
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Route racine / bienvenue
 app.get('/', (req, res) => {

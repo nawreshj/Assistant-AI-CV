@@ -96,7 +96,7 @@ Schema:
     }
   ],
   "educations": [
-    { "degree": string, "institution": string, "start_date": "YYYY-MM", "end_date": "YYYY-MM" | "present" }
+    { "degree": string, "institution": string, "start_date": "Month YYYY", "end_date": "YMonth YYYY" | "present" }
   ],
   "projects": [
     {
@@ -250,8 +250,12 @@ Please generate the final personalized CV JSON according to the schema above.`;
 
     const raw = response.choices[0].message.content;
     const { valid, cleaned } = isValidJson(raw);
+    console.log("C'est un format Json valide");
+    console.log(JSON.parse(cleaned));
     if (!valid) return res.status(422).json({ error: 'Invalid JSON', raw });
 
     console.log("✅ CV structuré généré !");
-    res.json(JSON.parse(cleaned));
+    const finalCv = JSON.parse(cleaned);
+    res.json({ structuredCV: finalCv });
     console.dir(cleaned, { depth: null, colors: true });};
+

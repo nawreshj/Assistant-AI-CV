@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="<%= language %>">
+<head>
+    <meta charset="UTF-8" />
+    <title><%= full_name %> – <%= cv_title %></title>
+    <style>
+        /* Reset & Base */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; color: #333; background: #fff; line-height: 1.4; }
+        /* Header */
+        .cv-header {
+            background: none;      /* plus de couleur de fond */
+            text-align: center;
+            padding: 0;            /* plus d’espace inutile */
+            position: relative;
+        }
+        .cv-header .header-block {
+            position: static;      /* place-le dans le flux normal */
+            transform: none;       /* plus de décalage horizontal */
+            margin: 20px auto; /* centré horizontalement, 20px de marge verticale */
+            background: #fff;
+            border: 1px solid #000;
+            padding: 10px 20px;
+            display: inline-block;  /* passe en inline-block */
+            width: auto;            /* taille au contenu */
+        }
+        .header-block{margin-top: 100px;}
+        .cv-header h1 { font-size: 20px; text-transform: uppercase; margin-bottom: 4px; }
+        .cv-header h2 { font-size: 14px; font-weight: bold; }
+        /* Layout */
+        .container { display: grid; grid-template-columns: 30% 70%; margin-top: 0px; }
+        .sidebar {
+            background: #f2e8f0;
+            margin-top: -120px;     /* remonte le bloc de 80px (hauteur approximative du header) */
+            padding: 180px 20px 20px; /* compense ce recul pour le contenu */
+        }
+        .sidebar section {
+            margin-bottom: 16px; /* au lieu de 6px */
+        }
+
+        .content { padding: 20px 30px; }
+        h3 { font-size: 12px; text-transform: uppercase; margin-bottom: 8px; padding-bottom: 2px; border-bottom: 1px solid #ccc; }
+        /* Lists */
+        ul { list-style: none; padding-left: 0; }
+        .sidebar li { font-size: 12px; margin-bottom: 4px; }
+        .sidebar li::before { content: '•'; margin-right: 6px; color: #333; }
+        .content li { font-size: 13px; margin-bottom: 6px; }
+        .content p {
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        /* Items */
+        .item-container { margin-bottom: 24px; }
+        .timeline-item, .project-item, .education-item { border-left: 2px solid #ccc; padding-left: 16px; }
+        .entity { font-weight: bold; font-size: 13px; margin-bottom: 4px; }
+        .item-subheader { font-size: 12px; color: #666; margin-bottom: 6px; }
+        .item-goal { font-size: 12px; color: #444; font-weight: 600; margin-bottom: 6px; }
+
+        /* Bullet points & spacing réduite pour les tâches */
+        .timeline-item ul,
+        .project-item ul {
+            list-style: disc;      /* puces classiques */
+            padding-left: 1em;     /* indent des puces */
+        }
+        .timeline-item ul li,
+        .project-item ul li {
+            font-size: 12px;       /* police plus petite */
+            margin-bottom: 4px;    /* espacement vertical réduit */
+        }
+        .item-technologies {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .item-technologies strong {
+            font-weight: 600;
+        }
+
+        /* Print adjustments */
+        @media print {
+            .cv-header, .sidebar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .item-container { page-break-inside: avoid; break-inside: avoid; }
+            @page { margin: 0mm; }
+            @page :first { margin-top: 0; }
+        }
+    </style>
+</head>
+<body>
+<% /* Month mapping function */ %>
+<%
+const monthNames = {
+    fr: ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'],
+    en: ['January','February','March','April','May','June','July','August','September','October','November','December']
+};
+function fmt(str) {
+    if (!str) return '';
+    const parts = str.split(/-|\s+/);
+    if (parts.length === 2 && parts[0].length === 4) {
+        const [y, m] = parts;
+        const idx = parseInt(m, 10) - 1;
+        const mn = monthNames[language][idx] || m;
+        return mn.charAt(0).toUpperCase() + mn.slice(1) + ' ' + y;
+    }
+    return str;
+}
+%>
+<header class="cv-header">
+    <div class="header-block">
+        <h1><%= full_name %></h1>
+        <h2><%= cv_title %></h2>
+    </div>
+</header>
+
+<div class="container">
+    <aside class="sidebar">
+        <section>
+            <h3><%= titles.contact_block %></h3>
+            <ul>
+                <% if (contact.email) { %><li><%= contact.email %></li><% } %>
+                <% if (contact.city && contact.postal_code) { %><li><%= contact.city %> | <%= contact.postal_code %></li><% } %>
+            </ul>
+        </section>
+        <% if (languages?.length) { %>
+            <section>
+                <h3><%= titles.languages %></h3>
+                <ul>
+                    <% languages.forEach(l => { %>
+                        <li><%- l.matched ? '<strong>'+l.language+' – '+l.level+'</strong>' : l.language+' – '+l.level %></li>
+                    <% }) %>
+                </ul>
+            </section>
+        <% } %>
+        <% if (hobbies?.length) { %>
+            <section>
+                <h3><%= titles.hobbies %></h3>
+                <ul><% hobbies.forEach(h => { %><li><%= h %></li><% }) %></ul>
+            </section>
+        <% } %>
+        <% if (soft_skills?.length) { %>
+            <section>
+                <h3><%= titles.soft_skills %></h3>
+                <ul><% soft_skills.forEach(s => { %><li><%= s %></li><% }) %></ul>
+            </section>
+        <% } %>
+        <% if (skills?.length) { %>
+            <section>
+                <h3><%= titles.skills %></h3>
+                <ul>
+                    <% skills.forEach(s => { %>
+                        <li><%- s.matched ? '<strong>'+s.name+'</strong>' : s.name %></li>
+                    <% }) %>
+                </ul>
+            </section>
+        <% } %>
+    </aside>
+    <main class="content">
+        <% if (profile) { %>
+            <section>
+                <h3><%= titles.profile %></h3>
+                <p><%= profile %></p>
+            </section>
+        <% } %>
+        <% if (educations?.length) { %>
+            <section>
+                <h3><%= titles.educations %></h3>
+                <% educations.forEach(ed => { %>
+                    <div class="item-container education-item">
+                        <div class="entity"><%= ed.degree %></div>
+                        <div class="item-subheader"><%= ed.institution %> | <%= fmt(ed.start_date) %> – <%= ed.end_date === 'present' ? (language === 'fr' ? 'Présent' : 'Present') : fmt(ed.end_date) %></div>
+                    </div>
+                <% }) %>
+            </section>
+        <% } %>
+        <% if (experiences?.length) { %>
+            <section>
+                <h3><%= titles.experiences %></h3>
+                <% experiences.forEach(ex => { %>
+                    <div class="item-container timeline-item">
+                        <div class="entity"><%= ex.title %></div>
+                        <div class="item-subheader"><%= ex.company %> | <%= fmt(ex.start_date) %> – <%= ex.end_date === 'present' ? (language === 'fr' ? 'Présent' : 'Present') : fmt(ex.end_date) %></div>
+                        <% if(ex.description?.goal){ %>
+                            <div class="item-goal">
+                                <%= language === 'fr' ? 'Enjeu : ' : 'Goal : ' %><%= ex.description.goal %>
+                            </div>
+                        <% } %>
+                        <% if (ex.description?.tasks) { %>
+                            <ul><% ex.description.tasks.forEach(t => { %><li><%= t %></li><% }) %></ul>
+                        <% } %>
+                        <% if (ex.technologies?.length) { %>
+                            <div class="item-technologies">
+                                <strong><%= 'Technologies :'  %></strong>
+                                <%= ex.technologies.join(', ') %>
+                            </div>
+                        <% } %>
+                    </div>
+                <% }) %>
+            </section>
+        <% } %>
+        <% if (projects?.length) { %>
+            <section>
+                <h3><%= titles.projects %></h3>
+                <% projects.forEach(pr => { %>
+                    <div class="item-container project-item">
+                        <div class="entity"><%= pr.title %></div>
+                        <div class="item-subheader"><%= pr.institution %> | <%= fmt(pr.start_date) %> – <%= pr.end_date === 'present' ? (language === 'fr' ? 'Présent' : 'Present') : fmt(pr.end_date) %></div>
+                        <% if (pr.description?.goal) { %>
+                            <div class="item-goal"><%= pr.description.goal %></div>
+                        <% } %>
+                        <% if (pr.description?.tasks) { %>
+                            <ul><% pr.description.tasks.forEach(t => { %><li><%= t %></li><% }) %></ul>
+                        <% } %>
+                        <div class="item-technologies">
+                            <strong><%= 'Technologies :'  %></strong>
+                            <%= pr.technologies.join(', ') %>
+                        </div>
+                    </div>
+                <% }) %>
+            </section>
+        <% } %>
+        <% if (certifications?.length) { %>
+            <section>
+                <h3><%= titles.certifications %></h3>
+                <ul><% certifications.forEach(c => { %><li><%= c.name %> – <%= c.issuer %> (<%= c.date %>)</li><% }) %></ul>
+            </section>
+        <% } %>
+    </main>
+</div>
+</body>
+</html>

@@ -42,7 +42,7 @@ async function generatePdf(req, res, next) {
         const renderData = { ...structuredCV, titles };
 
         // 2) Chemin vers le template
-        const templatePath = path.join(__dirname, '../views/cvTemplatebis.ejs');
+        const templatePath = path.join(__dirname, '../views/cvTemplate3.ejs');
         console.log('🔗 templatePath :', templatePath);
 
         // 3) Rend le HTML
