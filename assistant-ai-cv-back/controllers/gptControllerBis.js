@@ -55,6 +55,7 @@ CRITICAL INSTRUCTIONS:
   all tailored to the job offer’s priorities.
 - Do NOT invent information; use only what exists in the CV or the job offer.
 
+
 Schema:
 {
   "language": "fr" | "en",
@@ -79,15 +80,19 @@ Schema:
   "languages": [
     { "language": string, "level": string , "matched": boolean }
   ],
-  "keywords_in_common": [string],
   "experiences": [
     {
       "title": string,
       "company": string,
-      "start_date": "YYYY-MM",
-      "end_date": "YYYY-MM" | "present",
+      "start_date": "Month YYYY",
+      "end_date": "Month YYYY" | "present",
       "technologies": [string],
-      "description": [string] // objective , task1, task2, ...  (max 500 chars) – REQUIRED
+      "description":
+      {
+      "goal" : string , 
+      "tasks" : [string]
+      },
+   
     }
   ],
   "educations": [
@@ -96,18 +101,22 @@ Schema:
   "projects": [
     {
       "title": string,
-      "description": [string] // objective , task1, task2, ... (max 500 chars) – REQUIRED
+      "description":
+      {
+      "goal" : string , 
+      "tasks" : [string]
+      }
       "technologies": [string],
-      "role": string,
-      "start_date": "YYYY-MM" | null,
-      "end_date": "YYYY-MM" | null,
-      "impact": string | null
+      "start_date": "Month YYYY" | null,
+      "end_date": "Month YYYY" | null
+      
     }
   ],
   "certifications": [
     { "name": string, "issuer": string, "date": "YYYY-MM", "matched": boolean }
   ],
-  "hobbies": [string]
+  "hobbies": [string],
+  "keywords_in_common": [string]
 }
 `;
 
