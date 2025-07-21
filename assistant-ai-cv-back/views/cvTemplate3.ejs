@@ -142,10 +142,18 @@ function fmt(str) {
         <% if (soft_skills?.length) { %>
             <section>
                 <h3><%= titles.soft_skills %></h3>
-                <ul><% soft_skills.forEach(s => { %><li><%= s %></li><% }) %></ul>
+                <ul>
+                    <% soft_skills.forEach(s => { %>
+                        <li><%- s.matched
+                                    ? '<strong>' + s.name + '</strong>'
+                                    : s.name
+                            %></li>
+                    <% }) %>
+                </ul>
             </section>
         <% } %>
-        <% if (skills?.length) { %>
+
+    <% if (skills?.length) { %>
             <section>
                 <h3><%= titles.skills %></h3>
                 <ul>
@@ -203,10 +211,16 @@ function fmt(str) {
                         <% } %>
                         <% if (ex.technologies?.length) { %>
                             <div class="item-technologies">
-                                <strong><%= 'Technologies :'  %></strong>
-                                <%= ex.technologies.join(', ') %>
+                                <strong><%= 'Technologies :' %></strong>
+                                <% ex.technologies.forEach((tech, idx) => { %>
+                                    <%- tech.matched
+                                            ? '<strong>' + tech.name + '</strong>'
+                                            : tech.name
+                                    %><%= idx < ex.technologies.length - 1 ? ', ' : '' %>
+                                <% }) %>
                             </div>
                         <% } %>
+
                     </div>
                 <% }) %>
             </section>
@@ -224,10 +238,18 @@ function fmt(str) {
                         <% if (pr.description?.tasks) { %>
                             <ul><% pr.description.tasks.forEach(t => { %><li><%= t %></li><% }) %></ul>
                         <% } %>
-                        <div class="item-technologies">
-                            <strong><%= 'Technologies :'  %></strong>
-                            <%= pr.technologies.join(', ') %>
-                        </div>
+                        <% if (pr.technologies?.length) { %>
+                            <div class="item-technologies">
+                                <strong><%= 'Technologies :' %></strong>
+                                <% pr.technologies.forEach((tech, idx) => { %>
+                                    <%- tech.matched
+                                            ? '<strong>' + tech.name + '</strong>'
+                                            : tech.name
+                                    %><%= idx < pr.technologies.length - 1 ? ', ' : '' %>
+                                <% }) %>
+                            </div>
+                        <% } %>
+
                     </div>
                 <% }) %>
             </section>

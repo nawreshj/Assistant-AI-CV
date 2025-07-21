@@ -52,17 +52,17 @@ CRITICAL INSTRUCTIONS:
 * Detect and set \`"language"\` field to the CV’s original language (\`"fr"\` or \`"en"\`); output all text in that language.
 * Do NOT include duplicate keys; use null for missing or unavailable values.
 * Include every field defined in the schema; if a field has no data, return as empty string, object, or array.
-* Dates must be in “Month YYYY” format (e.g., "June 2024" for English CVs or "juin 2024" for French CVs) or the literal “present” (or “présent” in French).* Skills must be extracted as individual atomic noun phrases. When a skill entry lists multiple items (comma- or colon-separated), split them into separate skill objects (e.g., “Java, Python, C++” becomes separate entries). Include every skill explicitly listed in the offer and any implied by the candidate’s experiences.
-* Limit the \`"skills"\` array to a maximum of 10 items.
-* **For both \`"skills"\` and \`"soft_skills"\`, use only competencies found in recognized repositories**—ESCO (v1.2), DISCO, SFIA (EN/FR), ROME or O\\*NET—adopting their official labels (in the CV’s language) and, when available, identifiers.
+* Dates must be in “Month YYYY” format (e.g., "June 2024" for English CVs or "juin 2024" for French CVs) or the literal “present” (or “présent” in French).
+* For both \`"skills"\` and \`"soft_skills"\`, use only competencies found in recognized repositories**—ESCO (v1.2), DISCO, SFIA (EN/FR), ROME or O\\*NET—adopting their official labels (in the CV’s language) .
+* A reasonable number of skills
 * Add field \`"keywords_in_common"\`: list of shared keywords between CV and job offer; ensure each appears in the CV content.
 * For each experience and project, set \`"description"\` as an object with:
   * \`"goal"\`: a concise statement of the challenge or objective,
   * \`"items"\`: an array of bullet-point strings detailing context, responsibilities, technologies used, measurable outcomes, and how this relates to the job offer’s requirements.
-* Write in an impersonal tone (third-person or passive voice; avoid first-person pronouns).
+* Ensure that items in "educations", "projects" and "experiences" arrays are ordered in strict reverse chronological order (most recent first).* Write in an impersonal tone (third-person or passive voice; avoid first-person pronouns).
 * Explicitly personalize the CV: tailor phrasing, reorder sections, and emphasize achievements per the job offer’s priorities.
 * Do NOT invent or hallucinate new information; except that strongly implied details (such as skills or responsibilities evident from an experience or education) may be included if clearly supported by the CV.
-* Include a personalized \`"cv_title"\` and \`"profile"\` that reflect the priorities and terminology of the job offer and add the type of contract.
+* Include a personalized \`"cv_title"\` and \`"profile"\` that reflect the priorities and terminology of the job offer .
 
 Schema:
 {
@@ -79,9 +79,9 @@ Schema:
   "cv_title": string,
   "profile": string,
   "skills": [
-    { "name": string, "category": string, "matched": boolean }
+    { "name": string, "matched": boolean }
   ],
-  "soft_skills": [string],
+  "soft_skills": [ { "name": string, "matched": boolean }],
   "languages": [
     { "language": string, "level": string , "matched": boolean }
   ],
@@ -91,7 +91,7 @@ Schema:
       "company": string,
       "start_date": "Month YYYY",
       "end_date": "Month YYYY" | "present",
-      "technologies": [string],
+      "technologies": [ { "name": string, "matched": boolean }],
       "description":
       {
       "goal" : string , 
@@ -101,7 +101,7 @@ Schema:
     }
   ],
   "educations": [
-    { "degree": string, "institution": string, "start_date": "Month YYYY", "end_date": "YMonth YYYY" | "present","extra_informations": string }
+    { "degree": string, "institution": string, "start_date": "Month YYYY", "end_date": "YMonth YYYY" | "present","extra_informations": string, "matched" : string }
   ],
   "projects": [
     {
@@ -111,7 +111,7 @@ Schema:
       "goal" : string , 
       "tasks" : [string]
       }
-      "technologies": [string],
+      "technologies": [ { "name": string, "matched": boolean }],
       "start_date": "Month YYYY" | null,
       "end_date": "Month YYYY" | null
       
@@ -262,5 +262,9 @@ Please generate the final personalized CV JSON according to the schema above.`;
     console.log("✅ CV structuré généré !");
     const finalCv = JSON.parse(cleaned);
     res.json({ structuredCV: finalCv });
-    console.dir(cleaned, { depth: null, colors: true });};
+    console.dir(cleaned, { depth: null, colors: true });
+    console.log("##########################################################");
+    console.log(JSON.stringify(finalCv, null, 2));
+
+};
 
