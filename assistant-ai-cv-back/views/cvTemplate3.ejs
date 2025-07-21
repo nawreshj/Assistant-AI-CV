@@ -171,10 +171,8 @@ function fmt(str) {
                             <div class="entity"><%= ed.degree %></div>
                             <div class="item-subheader">
                                 <%= ed.institution %> |
-                                <%= fmt(ed.start_date) %> –
-                                <%= ed.end_date === 'present'
-                                        ? (language === 'fr' ? 'Présent' : 'Present')
-                                        : fmt(ed.end_date) %>
+                                <%= ed.start_date %> –
+                                <%= ed.end_date %>
                             </div>
                             <% if (ed.extra_information && ed.extra_information.length) { %>
                                 <ul class="education-extra-info">
@@ -194,7 +192,7 @@ function fmt(str) {
                 <% experiences.forEach(ex => { %>
                     <div class="item-container timeline-item">
                         <div class="entity"><%= ex.title %></div>
-                        <div class="item-subheader"><%= ex.company %> | <%= fmt(ex.start_date) %> – <%= ex.end_date === 'present' ? (language === 'fr' ? 'Présent' : 'Present') : fmt(ex.end_date) %></div>
+                        <div class="item-subheader"><%= ex.company %> | <%= ex.start_date%> – <%= ex.end_date %></div>
                         <% if(ex.description?.goal){ %>
                             <div class="item-goal">
                                 <%= language === 'fr' ? 'Enjeu : ' : 'Goal : ' %><%= ex.description.goal %>
@@ -219,7 +217,7 @@ function fmt(str) {
                 <% projects.forEach(pr => { %>
                     <div class="item-container project-item">
                         <div class="entity"><%= pr.title %></div>
-                        <div class="item-subheader"><%= pr.institution %> | <%= fmt(pr.start_date) %> – <%= pr.end_date === 'present' ? (language === 'fr' ? 'Présent' : 'Present') : fmt(pr.end_date) %></div>
+                        <div class="item-subheader"><%= pr.institution %> | <%= pr.start_date %> – <%= pr.end_date %></div>
                         <% if (pr.description?.goal) { %>
                             <div class="item-goal"><%= pr.description.goal %></div>
                         <% } %>

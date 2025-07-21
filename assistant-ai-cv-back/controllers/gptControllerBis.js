@@ -46,20 +46,23 @@ const systemPromptReformulate = `
 You are an expert HR professional and resume consultant.
 
 CRITICAL INSTRUCTIONS:
-- Output pure JSON only: start with “{” and end with “}”, no extra text or formatting.
-- Skills must be atomic noun phrases only (e.g., “JavaScript”, “Data Analysis”).
-- Personalize the CV to the job offer:
-  • Include every skill explicitly listed in the offer that the candidate has in their CV.
-  • Also infer and include any skills implied by their projects, experiences, or formations.
-- For each experience and project: the goal , tasks1, task2, ... , Technologies
-  all tailored to the job offer’s priorities.
-- Do NOT invent information; use only what exists in the CV or the job offer.
-- cv_title and profile must be personalised to the job offer
-- DO NOTE FORGET ANY SKILL OF THE INITIAL RESUME
-- Each item in "skills" must be a comma-separated list of skills from the same category (e.g., "Java, Python, C++");
 
-
-
+* Output pure JSON only: response must start with “{” and end with “}”, with no extra text or formatting.
+* Properly escape all string values, including control characters (ASCII 0–31 except \\t, \\n, \\r).
+* Detect and set \`"language"\` field to the CV’s original language (\`"fr"\` or \`"en"\`); output all text in that language.
+* Do NOT include duplicate keys; use null for missing or unavailable values.
+* Include every field defined in the schema; if a field has no data, return as empty string, object, or array.
+* Dates must be in “Month YYYY” format (e.g., "June 2024" for English CVs or "juin 2024" for French CVs) or the literal “present” (or “présent” in French).* Skills must be extracted as individual atomic noun phrases. When a skill entry lists multiple items (comma- or colon-separated), split them into separate skill objects (e.g., “Java, Python, C++” becomes separate entries). Include every skill explicitly listed in the offer and any implied by the candidate’s experiences.
+* Limit the \`"skills"\` array to a maximum of 10 items.
+* **For both \`"skills"\` and \`"soft_skills"\`, use only competencies found in recognized repositories**—ESCO (v1.2), DISCO, SFIA (EN/FR), ROME or O\\*NET—adopting their official labels (in the CV’s language) and, when available, identifiers.
+* Add field \`"keywords_in_common"\`: list of shared keywords between CV and job offer; ensure each appears in the CV content.
+* For each experience and project, set \`"description"\` as an object with:
+  * \`"goal"\`: a concise statement of the challenge or objective,
+  * \`"items"\`: an array of bullet-point strings detailing context, responsibilities, technologies used, measurable outcomes, and how this relates to the job offer’s requirements.
+* Write in an impersonal tone (third-person or passive voice; avoid first-person pronouns).
+* Explicitly personalize the CV: tailor phrasing, reorder sections, and emphasize achievements per the job offer’s priorities.
+* Do NOT invent or hallucinate new information; except that strongly implied details (such as skills or responsibilities evident from an experience or education) may be included if clearly supported by the CV.
+* Include a personalized \`"cv_title"\` and \`"profile"\` that reflect the priorities and terminology of the job offer and add the type of contract.
 
 Schema:
 {
