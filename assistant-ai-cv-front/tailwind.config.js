@@ -1,15 +1,13 @@
 // tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 export default {
-    // Où Tailwind va scanner tes classes
     content: [
-        "./index.html",
-        "./src/**/*.{js,jsx,ts,tsx}"
+        "./index.html",           // votre template
+        "./src/**/*.{js,jsx,ts,tsx}"  // tous vos composants React
     ],
-    // On active le dark mode via une classe `dark` sur <html>
-    darkMode: 'class',
+    darkMode: 'class',         // activation du mode sombre par classe
     theme: {
-        extend: {},      // ici tu pourras ajouter tes couleurs/customizations
+        extend: {},               // ici vos personnalisations futures
     },
     plugins: [],
 }
