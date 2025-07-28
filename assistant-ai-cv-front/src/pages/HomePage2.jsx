@@ -1,18 +1,10 @@
 import React from "react";
 import { Box, Flex, Heading, Text, Button, Image } from "@chakra-ui/react";
 import Nav from "../components/Nav";
-import { useNavigate } from "react-router-dom";
 
 export default function HomePage() {
-    const navigate = useNavigate();
     return (
-        <Box
-            pos="absolute"     // position absolute par rapport à l’écran
-            inset="0"          // top:0 right:0 bottom:0 left:0
-            bg="background"
-            color="text"
-            overflow="hidden"  // empêche le scroll si un enfant déborde
-        >
+        <Box minH="100vh" bg="background" color="text" pt={16}>
             <Nav />
 
             <Flex
@@ -32,10 +24,7 @@ export default function HomePage() {
                         <br />
                         Notre assistant IA adapte ton CV à chaque annonce pour maximiser tes chances d’être recruté.
                     </Text>
-                    <Button colorScheme="blue"
-                      size="lg"
-                      onClick={() => navigate("/generate")}
-                    >
+                    <Button colorScheme="blue" size="lg" onClick={() => console.log("go generate")}>
                         Commencer
                     </Button>
                 </Box>

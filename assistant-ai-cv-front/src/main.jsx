@@ -1,18 +1,20 @@
+// src/main.jsx
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.jsx";
-import { BrowserRouter } from "react-router-dom";
 import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
-import { ThemeProvider } from "./context/ThemeContext.jsx";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import App from "./App.jsx";
+import system from "./system.js";
+import { BrowserRouter } from "react-router-dom";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
-        <ChakraProvider value={defaultSystem}>
-            <ThemeProvider>
+        <ChakraProvider value={system || defaultSystem}>
+            <NextThemesProvider attribute="class" disableTransitionOnChange>
                 <BrowserRouter>
                     <App />
                 </BrowserRouter>
-            </ThemeProvider>
+            </NextThemesProvider>
         </ChakraProvider>
     </React.StrictMode>
 );

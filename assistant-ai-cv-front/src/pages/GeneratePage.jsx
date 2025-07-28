@@ -1,10 +1,12 @@
 // src/pages/GeneratePage.jsx
 import React, { useState } from 'react';
+import { Box, Center, Text } from '@chakra-ui/react';
 import UploadForm from '../components/UploadForm';
 import Loading from '../components/Loading';
 import { getExtractionText } from '../api/extractionAPI';
 import { getExtractionGpt, getReformulationGpt } from '../api/gptApi';
 import { useNavigate } from 'react-router-dom';
+import Nav from '../components/Nav';
 
 const GeneratePage = ({ setStructuredCV }) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -20,9 +22,8 @@ const GeneratePage = ({ setStructuredCV }) => {
             const { cvData, offerData } = await getExtractionGpt({ cvText, offerText });
             const { structuredCV } = await getReformulationGpt({ cvData, offerData });
 
-            setStructuredCV(structuredCV);// On stocke le résultat dans App
-            console.log("Tentative de direction ver previewpage");
-            navigate('/preview');// On redirige vers la page d’aperçu
+            setStructuredCV(structuredCV);
+            navigate('/preview');
         } catch (err) {
             console.error(err);
             setError("Une erreur est survenue pendant le traitement.");
@@ -32,19 +33,33 @@ const GeneratePage = ({ setStructuredCV }) => {
     };
 
     return (
-        <div className="App">
-            {isLoading && <Loading />}
-
-            {!isLoading && (
-                <UploadForm onSubmit={handleSubmit} />
+        <Box
+            pos="absolute"     // position absolute par rapport à l’écran
+            inset="0"          // top:0 right:0 bottom:0 left:0
+            bg="background"
+            color="text"
+            overflow="hidden"  // empêche le scroll si un enfant déborde
+        >
+            <Nav />
+            {isLoading && (
+                <Center h="full">
+                    <Loading />
+                </Center>
             )}
+
+            {!isLoading &&
+                <Box pt={{ base: 0, md: 0 }} maxW="6xl" mx="auto">
+                    <UploadForm onSubmit={handleSubmit} />
+                </Box>
+
+            }
 
             {!isLoading && error && (
-                <div className="error-message">
-                    <p>{error}</p>
-                </div>
+                <Text color="red.500" mt={4} textAlign="center">
+                    {error}
+                </Text>
             )}
-        </div>
+        </Box>
     );
 };
 
