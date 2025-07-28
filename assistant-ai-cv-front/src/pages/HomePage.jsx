@@ -1,71 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Button from "../components/Button.jsx";
+// Étape 1 : structure de base avec 2 colonnes (layout responsive)
+import React from "react";
+import { Box, Flex, Heading, Text, Button, Image } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
+import ThemeToggleButton from "../components/ThemeToggleButton";
+import { useThemeMode } from "../context/ThemeContext";
 
 export default function HomePage() {
-    const [isDark, setIsDark] = useState(true);
     const navigate = useNavigate();
-
-    console.log("✅ HomePage chargé, isDark :", isDark);
-
-    useEffect(() => {
-        document.documentElement.classList.add("dark");
-        setIsDark(true);
-    }, []);
-
-    const toggleTheme = () => {
-        const html = document.documentElement;
-        if (isDark) {
-            html.classList.remove("dark");
-            setIsDark(false);
-        } else {
-            html.classList.add("dark");
-            setIsDark(true);
-        }
-    };
+    const { theme } = useThemeMode();
 
     return (
-        <div className="relative min-h-screen flex flex-col bg-gray-900 text-white transition-colors duration-300">
-            {/* Bouton thème en haut à droite */}
-            <button
-                onClick={toggleTheme}
-                className="absolute top-[20px] right-[20px] px-4 py-2 text-sm bg-gray-800 text-white rounded hover:bg-gray-700 transition"
+        <Box
+            bg={theme.bg}
+            color={theme.color}
+            h="100vh"
+            w="100vw"
+            m="0"
+            p="0"
+            position="absolute"
+            overflow="hidden"
+            transition="background-color 0.3s"
+        >
+            {/* Bouton pour changer de thème */}
+            <Box position="absolute" top="4" right="4">
+                <ThemeToggleButton />
+            </Box>
+
+            {/* Layout principal : deux colonnes */}
+            <Flex
+                direction={{ base: "column", md: "row" }}
+                align="center"
+                justify="center"
+                minH="100vh"
+                px={{ base: 6, md: 16 }}
+                py={{ base: 10, md: 0 }}
+                gap={10}
             >
-                {isDark ? '☀️ Mode clair' : '🌙 Mode sombre'}
-            </button>
+                {/* Colonne gauche : texte */}
+                <Box flex="1" textAlign={{ base: "center", md: "left" }}>
+                    <Heading size="2xl" mb="4">
+                        CV AI Optimizer
+                    </Heading>
+                    <Text fontSize="lg" mb="6">
+                        Un assistant intelligent pour adapter ton CV à chaque offre d’emploi.
+                    </Text>
+                    <Text fontSize="md" mb="6">
+                        Fini les candidatures génériques. <br />
+                        Personnalise ton CV en un clic et attire l’attention des recruteurs.
+                    </Text>
+                    <Button colorScheme="blue" size="lg" onClick={() => navigate("/generate")}>Commencer</Button>
+                </Box>
 
-
-            {/* Contenu centré */}
-            <div className="flex-1 flex items-center justify-center">
-                {/* Logo */}
-                <img
-                    src="/logoApp.png"
-                    alt="Logo"
-                    className="
-                        relative                /* active le positionnement relatif */
-                        top-[-150px]            /* déplace l’élément de 150px vers le haut */
-                        w-48 h-48 md:w-64 md:h-64
-                        object-contain
-                      "
-                />
-
-                {/* Texte en bas à gauche */}
-                <div className="absolute bottom-[150px] left-10 max-w-md">
-
-                    <h1 className="text-3xl md:text-4xl font-bold mb-4 flex items-center gap-2">
-                        🚀 <span>CV AI Optimizer</span>
-                    </h1>
-                    <p className="text-sm md:text-base text-gray-300 mb-6">
-                        Personnalisez votre CV automatiquement selon une offre d'emploi.<br/>
-                        Gagnez du temps et augmentez vos chances de décrocher un entretien.
-                    </p>
-                    <Button onClick={() => navigate('/generate')}>
-                        Commencer
-                    </Button>
-
-                </div>
-
-            </div>
-        </div>
+                {/* Colonne droite : image mascotte */}
+                <Box flex="1" display="flex" justifyContent="center">
+                    <Image
+                        src="/mascotte.png"
+                        alt="Mascotte IA"
+                        boxSize={{ base: "200px", md: "300px" }}
+                        objectFit="contain"
+                    />
+                </Box>
+            </Flex>
+        </Box>
     );
 }

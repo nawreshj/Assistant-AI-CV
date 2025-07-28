@@ -1,3 +1,16 @@
+html, body, #root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: light;
+    }
+}
+
 :root {
     font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
     line-height: 1.5;
@@ -10,6 +23,8 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    --chakra-colors-background: #f7fafc;     /* fond clair */
+    --chakra-colors-foreground: #1a202c;
 }
 
 a {
@@ -66,10 +81,10 @@ button:focus-visible {
     }
 }
 
-html, body, #root {
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+
+
+.dark {
+    --chakra-colors-background: #1a202c;
+    --chakra-colors-foreground: #f7fafc;
 }
+

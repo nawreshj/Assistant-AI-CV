@@ -5,6 +5,7 @@ import GeneratePage from './pages/GeneratePage';
 import PreviewPage from './pages/PreviewPage.jsx';
 import EditPage from './pages/EditPage.jsx';
 import { downloadPdf } from './api/pdfApi';
+import HomePage from "./pages/HomePage.jsx";
 
 export default function App() {
     const [structuredCV, setStructuredCV] = useState(null);
@@ -13,10 +14,8 @@ export default function App() {
     return (
         <div className="App">
             <Routes>
-                <Route
-                    path="/"
-                    element={<GeneratePage setStructuredCV={setStructuredCV} />}
-                />
+                <Route path="/" element={<HomePage />} />
+                <Route path="/generate" element={<GeneratePage setStructuredCV={setStructuredCV} />} />
                 <Route
                     path="/preview"
                     element={
@@ -40,6 +39,7 @@ export default function App() {
                     }
                 />
             </Routes>
+
         </div> // <-- cette ligne manquait
     );
 }

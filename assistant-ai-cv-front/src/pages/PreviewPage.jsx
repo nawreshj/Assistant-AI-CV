@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';import PropTypes from 'prop-types';
 import '../styles/PreviewPage.css';
 import CvPreview from '../components/CvPreview';
 
@@ -9,6 +9,14 @@ import CvPreview from '../components/CvPreview';
  * puis propose les actions de modification, génération et réinitialisation.
  */
 function PreviewPage({ structuredCV, onEdit, onGenerate, onReset }) {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!structuredCV) {
+            navigate('/generate');
+        }
+    }, [structuredCV, navigate]);
+    if (!structuredCV) return null;
     return (
         <div className="preview-page">
             {/* Aperçu du CV dans un cadre iframe */}
@@ -33,7 +41,7 @@ function PreviewPage({ structuredCV, onEdit, onGenerate, onReset }) {
 }
 
 PreviewPage.propTypes = {
-    structuredCV: PropTypes.object.isRequired,
+    structuredCV: PropTypes.object,
     onEdit:       PropTypes.func.isRequired,
     onGenerate:   PropTypes.func.isRequired,
     onReset:      PropTypes.func.isRequired,
