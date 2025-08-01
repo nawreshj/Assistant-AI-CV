@@ -51,7 +51,7 @@ export default function GeneratePage({ setStructuredCV }) {
             ) : (
                 // —— Affiche le reste de la page ——
                 <>
-                   
+
 
                     <Center mt={{ base: 15, md: 18 }}>
                         <Image
