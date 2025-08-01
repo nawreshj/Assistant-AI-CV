@@ -1,17 +1,23 @@
 // src/pages/GeneratePage.jsx
 import React, { useState } from 'react';
-import { Box, Center, Text } from '@chakra-ui/react';
+import {
+    Box,
+    Center,
+    Text,
+    Image,
+    Heading
+} from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
+import Nav from '../components/Nav';
 import UploadForm from '../components/UploadForm';
 import Loading from '../components/Loading';
 import { getExtractionText } from '../api/extractionAPI';
 import { getExtractionGpt, getReformulationGpt } from '../api/gptApi';
-import { useNavigate } from 'react-router-dom';
-import Nav from '../components/Nav';
 
-const GeneratePage = ({ setStructuredCV }) => {
+export default function GeneratePage({ setStructuredCV }) {
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
+    const [error, setError]       = useState('');
+    const navigate               = useNavigate();
 
     const handleSubmit = async (formData) => {
         setIsLoading(true);
@@ -33,34 +39,50 @@ const GeneratePage = ({ setStructuredCV }) => {
     };
 
     return (
-        <Box
-            pos="absolute"     // position absolute par rapport à l’écran
-            inset="0"          // top:0 right:0 bottom:0 left:0
-            bg="background"
-            color="text"
-            overflow="hidden"  // empêche le scroll si un enfant déborde
-        >
+
+        <Box pos="absolute" inset="0" bg="background" color="text" overflow="hidden">
             <Nav />
-            {isLoading && (
-                <Center h="full">
+            {isLoading ? (
+
+                // —— Affiche uniquement le loader ——
+                <Center h="100vh">
                     <Loading />
                 </Center>
-            )}
+            ) : (
+                // —— Affiche le reste de la page ——
+                <>
+                   
 
-            {!isLoading &&
-                <Box pt={{ base: 0, md: 0 }} maxW="6xl" mx="auto">
-                    <UploadForm onSubmit={handleSubmit} />
-                </Box>
+                    <Center mt={{ base: 15, md: 18 }}>
+                        <Image
+                            src="/mini-mascotte.png"
+                            alt="Mascotte CV AI Optimizer"
+                            boxSize={{ base: '100px', md: '150px' }}
+                            objectFit="contain"
+                        />
+                    </Center>
 
-            }
+                    <Heading
+                        as="h1"
+                        size="lg"
+                        textAlign="center"
+                        mt={4}
+                        mb={6}
+                    >
+                        Générez un CV sur mesure avec l’IA
+                    </Heading>
 
-            {!isLoading && error && (
-                <Text color="red.500" mt={4} textAlign="center">
-                    {error}
-                </Text>
+                    <Box mt={{ base: 4, md: 6 }} maxW="6xl" mx="auto">
+                        <UploadForm onSubmit={handleSubmit} />
+                    </Box>
+
+                    {error && (
+                        <Text color="red.500" mt={4} textAlign="center">
+                            {error}
+                        </Text>
+                    )}
+                </>
             )}
         </Box>
     );
-};
-
-export default GeneratePage;
+}

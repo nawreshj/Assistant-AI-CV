@@ -1,13 +1,34 @@
+// src/components/Loading.jsx
 import React from 'react';
-import '../styles/Loading.css';
+import { VStack, Spinner, Text } from '@chakra-ui/react';
 
-const Loading = () => {
+export default function Loading() {
     return (
-        <div className="loading-container">
-            <h2>Analyse en cours...</h2>
-            <p>Veuillez patienter pendant que nous traitons votre CV et l'offre.</p>
-        </div>
-    );
-};
 
-export default Loading;
+        <VStack
+            spacing={4}
+            align="center"
+            justify="center"
+            h="100vh"
+            bg="background"   // token sémantique
+            color="text"      // token sémantique
+            p={4}
+        >
+            {/* Spinner principal */}
+            <Spinner
+                size="xl"           // taille du spinner
+                thickness="4px"     // épaisseur de l'anneau
+                speed="0.65s"       // vitesse de rotation
+                color="brand.500"   // ton bleu principal défini en theme.js
+            />
+
+            {/* Textes */}
+            <Text fontSize="lg" fontWeight="bold">
+                Matching en cours ...
+            </Text>
+            <Text textAlign="center">
+                Nous analysons les documents pour créer le CV sur-mesure a l'offre.
+            </Text>
+        </VStack>
+    );
+}
