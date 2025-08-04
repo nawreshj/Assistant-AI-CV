@@ -1,54 +1,87 @@
 import React from "react";
-import { Box, Flex, Heading, Text, Button, Image } from "@chakra-ui/react";
+import {
+    Box,
+    VStack,
+    Heading,
+    Text,
+    Button,
+    Image,
+    HStack,
+} from "@chakra-ui/react";
 import Nav from "../components/Nav";
 import { useNavigate } from "react-router-dom";
 
 export default function HomePage() {
     const navigate = useNavigate();
+
+    const steps = [
+        { emoji: "🧠", label: "Lecture du CV" },
+        { emoji: "🔍", label: "Analyse de l’offre" },
+        { emoji: "✍️", label: "Création du nouveau CV" },
+    ];
+
     return (
-        <Box
-            pos="absolute"     // position absolute par rapport à l’écran
-            inset="0"          // top:0 right:0 bottom:0 left:0
-            bg="background"
-            color="text"
-            overflow="hidden"  // empêche le scroll si un enfant déborde
-        >
+        <Box pos="absolute" inset="0" bg="background" color="text" overflow="hidden">
             <Nav />
 
-            <Flex
-                direction={{ base: "column", md: "row" }}
-                align="center"
-                justify="center"
-                px={6}
-                py={10}
-                gap={10}
-            >
-                <Box flex="1" textAlign={{ base: "center", md: "left" }}>
-                    <Heading size="2xl" mb="4">
-                        🎯 Générez un CV unique pour chaque offre
-                    </Heading>
-                    <Text fontSize="lg" mb="6">
-                        Fini les candidatures copiées-collées.
-                        <br />
-                        Notre assistant IA adapte ton CV à chaque annonce pour maximiser tes chances d’être recruté.
-                    </Text>
-                    <Button colorScheme="blue"
-                      size="lg"
-                      onClick={() => navigate("/generate")}
-                    >
-                        Commencer
-                    </Button>
-                </Box>
-
-                <Box flex="1" display="flex" justifyContent="center">
+            <VStack spacing={6} align="center" justify="center" h="100%" px={4} py={10} textAlign="center">
+                {/* Mascotte centrée + remontée */}
+                <Box mt={{ base: "-20px", md: "-40px" }} mb={2}>
                     <Image
                         src="/mascotte.png"
                         alt="Mascotte IA"
-                        boxSize={{ base: "200px", md: "300px" }}
+                        boxSize={{ base: "130px", md: "200px" }}
                         objectFit="contain"
                     />
                 </Box>
-            </Flex>
+
+                {/* Titre */}
+                <Heading size="2xl" fontWeight="bold">
+                    🎯 Un CV sur-mesure pour chaque offre
+                </Heading>
+
+                {/* Description */}
+                <Text fontSize="lg" maxW="600px" color="subtext">
+                    Fini les candidatures copiées-collées.
+                    <br />
+                    Laisse notre assistant IA adapter automatiquement ton CV à l’annonce.
+                </Text>
+
+                {/* Bouton stylisé */}
+                <Button
+                    colorScheme="blue"
+                    size="lg"
+                    px={10}
+                    py={6}
+                    fontSize="md"
+                    rounded="full"
+                    shadow="md"
+                    _hover={{ transform: "scale(1.05)" }}
+                    onClick={() => navigate("/generate")}
+                >
+                    Commencer
+                </Button>
+
+
+                {/* Étapes */}
+                <HStack spacing={4} pt={8} flexWrap="wrap" justify="center">
+                    {steps.map((item, i) => (
+                        <Box
+                            key={i}
+                            px={4}
+                            py={2}
+                            bg="step"
+                            rounded="full"
+                            transition="all 0.3s"
+                            _hover={{ bg: "accent", color: "white", transform: "scale(1.05)" }}
+                        >
+                            <Text fontSize="sm">
+                                {item.emoji} {item.label}
+                            </Text>
+                        </Box>
+                    ))}
+                </HStack>
+            </VStack>
         </Box>
     );
 }
