@@ -17,8 +17,8 @@ export default function Loading() {
             {/* Spinner principal */}
             <Spinner
                 size="xl"           // taille du spinner
-                thickness="20px"     // épaisseur de l'anneau
-                speed="0.65s"       // vitesse de rotation
+                thickness="8px"     // épaisseur de l'anneau
+                speed="0.80s"       // vitesse de rotation
                 color="brand.500"   // ton bleu principal défini en theme.js
             />
 

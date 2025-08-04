@@ -103,7 +103,7 @@ export default function UploadForm({ onSubmit }) {
                             mt={4}
                             colorScheme="blue"
                             size="md"
-                            isFullWidth
+                            width="100%"
                         >
                             Générer votre nouveau CV
                         </Button>

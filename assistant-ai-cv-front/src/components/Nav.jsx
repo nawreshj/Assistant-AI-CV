@@ -1,26 +1,23 @@
 // src/components/Nav.jsx
-import { Box, Button, Flex, Text, Icon } from "@chakra-ui/react";
-import { useTheme as useNextTheme } from "next-themes";
+import { Box, Button, Flex, Text, Icon, useColorMode, useColorModeValue } from "@chakra-ui/react";
 import { FaMoon, FaSun } from "react-icons/fa";
 
 export default function Nav() {
-    const { theme, setTheme } = useNextTheme(); // "light" ou "dark"
+    const { colorMode, toggleColorMode } = useColorMode();
+
+    // ici on définit deux couleurs : une pour le mode clair, l’autre pour le mode sombre
+    const bg = useColorModeValue("gray.50", "gray.800");
+    const color = useColorModeValue("gray.900", "white");
 
     return (
-        <Box bg="background" color="text" px={4} py={2} w="100%">
+        <Box bg={bg} color={color} px={4} py={2} w="100%">
             <Flex justify="space-between" align="center">
-                {/* Titre de l'app */}
                 <Text fontWeight="bold" fontSize="lg">
                     CV AI Optimizer
                 </Text>
 
-                {/* Bouton light/dark */}
-                <Button
-                    onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-                    size="sm"
-                    variant="ghost"
-                >
-                    <Icon as={theme === "light" ? FaMoon : FaSun} boxSize={5} />
+                <Button onClick={toggleColorMode} size="sm" variant="ghost">
+                    <Icon as={colorMode === "light" ? FaMoon : FaSun} boxSize={5} />
                 </Button>
             </Flex>
         </Box>

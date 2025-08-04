@@ -78,6 +78,14 @@
         .item-technologies strong {
             font-weight: 600;
         }
+        .contact-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .contact-list li::before {
+            content: none;
+        }
+
 
         /* Print adjustments */
         @media print {
@@ -87,6 +95,8 @@
             @page :first { margin-top: 0; }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
 </head>
 <body>
 <% /* Month mapping function */ %>
@@ -118,12 +128,47 @@ function fmt(str) {
     <aside class="sidebar">
         <section>
             <h3><%= titles.contact_block %></h3>
-            <ul>
-                <% if (contact.email) { %><li><%= contact.email %></li><% } %>
-                <% if (contact.address) { %><li><%= contact.address %> </li><% } %>
+            <ul class="contact-list">
+                <% if (contact.email) { %>
+                    <li>
+                        <i class="fas fa-envelope" aria-hidden="true"></i>
+                        <span><%= contact.email %></span>
+                    </li>
+                <% } %>
+                <% if (contact.phone) { %>
+                    <li>
+                        <i class="fas fa-phone" aria-hidden="true"></i>
+                        <span><%= contact.phone %></span>
+                    </li>
+                <% } %>
+                <% if (contact.address) { %>
+                    <li>
+                        <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                        <span><%= contact.address %></span>
+                    </li>
+                <% } %>
+                <% if (contact.linkedin) { %>
+                    <li>
+                        <i class="fab fa-linkedin" aria-hidden="true"></i>
+                        <a href="<%= contact.linkedin %>" target="_blank" rel="noopener"><%= contact.linkedin %></a>
+                    </li>
+                <% } %>
+                <% if (contact.github) { %>
+                    <li>
+                        <i class="fab fa-github" aria-hidden="true"></i>
+                        <a href="<%= contact.github %>" target="_blank" rel="noopener"><%= contact.github %></a>
+                    </li>
+                <% } %>
+                <% if (contact.website) { %>
+                    <li>
+                        <i class="fas fa-globe" aria-hidden="true"></i>
+                        <a href="<%= contact.website %>" target="_blank" rel="noopener"><%= contact.website %></a>
+                    </li>
+                <% } %>
             </ul>
         </section>
-        <% if (languages?.length) { %>
+
+    <% if (languages?.length) { %>
             <section>
                 <h3><%= titles.languages %></h3>
                 <ul>
