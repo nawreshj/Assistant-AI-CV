@@ -23,7 +23,7 @@ export default function App() {
                             structuredCV={structuredCV}
                             onEdit={() => navigate('/edit')}
                             onGenerate={() => downloadPdf(structuredCV)}
-                            onReset={() => navigate('/')}
+                            onReset={() => navigate('/generate')}
                         />
                     }
                 />
@@ -40,6 +40,6 @@ export default function App() {
                 />
             </Routes>
 
-        </div> // <-- cette ligne manquait
+        </div>
     );
 }
