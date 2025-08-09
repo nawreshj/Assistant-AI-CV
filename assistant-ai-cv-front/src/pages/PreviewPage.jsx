@@ -23,33 +23,34 @@ export default function PreviewPage({ structuredCV, onEdit, onGenerate, onReset 
     if (!structuredCV) return null;
 
     return (
-        <Box pos="absolute" inset="0" bg="background" color="text" overflow="auto">
+        <Box pos="absolute" inset="0" bg="background" color="text" overflowY="scroll"
+        >
             {/* Header commun */}
             <Nav />
 
             <Container maxW="6xl" py={{ base: 6, md: 10 }}>
                 <Heading size="lg" textAlign="center" mb={{ base: 4, md: 6 }}>
-                    Aperçu du CV
+                   🔎 Aperçu du CV
                 </Heading>
 
                 {/* Cadre d’aperçu (adapte les couleurs en dark) */}
                 {/* Feuille A4 centrée, fidèle au rendu initial */}
                 <Box display="flex" justifyContent="center" mt={{ base: 4, md: 6 }}>
                     <Box
-                        // A4 ~ 794×1123 @96dpi. En mobile: width = 90vw, height = width*1.414
-                        w={{ base: 'min(90vw, 794px)', md: '794px' }}
-                        h={{ base: 'calc(min(90vw, 794px) * 1.414)', md: '1123px' }}
-                        bg="white"                 // toujours blanc pour la feuille, même en dark
-                        color="black"              // texte noir dans la feuille
+                        // Dimensions réduites et bords arrondis
+                        w={{ base: 'min(88vw, 780px)', md: '780px' }}      // Largeur réduite
+                        h={{ base: 'calc(min(88vw, 780px) * 1.414)', md: '580px' }} // Hauteur réduite
+                        bg="white"
+                        color="black"
                         borderWidth="1px"
                         borderColor={{ base: 'gray.200', _dark: 'gray.600' }}
                         boxShadow="md"
                         overflow="hidden"
+                        borderRadius="lg" // Ajout pour les bords arrondis
                     >
                         <CvPreview structuredCV={structuredCV} />
                     </Box>
                 </Box>
-
 
                 {/* Boutons d’action */}
                 <Stack

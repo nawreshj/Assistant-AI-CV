@@ -27,12 +27,14 @@ import Nav from '../components/Nav';
 
 const EditPage = ({ structuredCV, onChange, onBack, onGenerate, language }) => {
     const [expanded, setExpanded] = useState([]);
-    const bgPage     = useColorModeValue('white', 'background'); // clair → gris très pâle, sombre → token background
-    const bgCard     = useColorModeValue('gray.50',    'card');       // clair → blanc,       sombre → token card
-
+    const bgPage     = useColorModeValue('gray.100', 'background'); // clair → gris très pâle, sombre → token background
+    const bgCard     = useColorModeValue('white',    'card');       // clair → blanc,       sombre → token card
     useEffect(() => {
         setExpanded(Object.keys(structuredCV));
     }, [structuredCV]);
+    const expandedBg = useColorModeValue('blue.50', 'blue.900'); // ou un token si tu préfères
+    const itemBorder  = 'step';
+    const cardBg      = bgCard; // tu l'as déjà défini plus haut
 
     const updateField = (section, path, value) => {
         const updated = structuredClone(structuredCV);
@@ -105,6 +107,8 @@ const EditPage = ({ structuredCV, onChange, onBack, onGenerate, language }) => {
         keywords_in_common: 'Mots-clés en commun'
     }[key] || key);
 
+
+
     return (
 
         <Box pos="absolute" inset="0" bg={bgPage} color="text" >
@@ -119,241 +123,266 @@ const EditPage = ({ structuredCV, onChange, onBack, onGenerate, language }) => {
             >
                 ✏️ Modifier le CV à votre guise
             </Heading>
-            <Box maxW="4xl" mx="auto" mt={6} mb={6} p={4} bg={bgCard} rounded="lg" boxShadow="md" w="100%" minH="100">
+            <Box maxW="4xl" mx="auto" mt={6} mb={6} p={4} bg={bgCard} rounded="lg" boxShadow="md" w="100%"  h="550px"
+                 overflowY="scroll">
 
                 <Accordion allowMultiple defaultIndex={[0]}>
                     {Object.entries(structuredCV).map(([section, value]) => {
                         if (section === 'language') return null;
+
                         return (
-                            <AccordionItem key={section} border="1px solid" borderColor="step" rounded="md" mb={4}>
-                                <AccordionButton>
-                                    <Box flex="1" textAlign="left" fontWeight="medium">
-                                        {labelFor(section)}
-                                    </Box>
-                                    <AccordionIcon />
-                                </AccordionButton>
-                                <AccordionPanel>
-                                    <VStack spacing={4} align="stretch">
-                                        {/* champs simples */}
-                                        {typeof value === 'string' && (
-                                            <FormControl>
-                                                <FormLabel fontSize="sm">{labelFor(section)}</FormLabel>
-                                                {section === 'profile' ? (
-                                                    <Textarea size="sm" value={value} onChange={e => updateField(section, '', e.target.value)} />
-                                                ) : (
-                                                    <Input size="sm" value={value} onChange={e => updateField(section, '', e.target.value)} />
+                            <AccordionItem
+                                key={section}
+                                border="1px solid"
+                                borderColor={itemBorder}
+                                rounded="md"
+                                mb={4}
+                            >
+                                {({ isExpanded }) => (
+                                    <>
+                                        <AccordionButton
+                                            bg={isExpanded ? expandedBg : cardBg}
+                                            transition="background 0.2s ease"
+                                        >
+                                            <Box flex="1" textAlign="left" fontWeight="medium">
+                                                {labelFor(section)}
+                                            </Box>
+                                            <AccordionIcon />
+                                        </AccordionButton>
+
+                                        <AccordionPanel
+                                            bg={isExpanded ? expandedBg : cardBg}
+                                            transition="background 0.2s ease"
+                                        >
+                                            <VStack spacing={4} align="stretch">
+                                                {/* champs simples */}
+                                                {typeof value === 'string' && (
+                                                    <FormControl>
+                                                        <FormLabel fontSize="sm">{labelFor(section)}</FormLabel>
+                                                        {section === 'profile' ? (
+                                                            <Textarea size="sm" value={value} onChange={e => updateField(section, '', e.target.value)} />
+                                                        ) : (
+                                                            <Input size="sm" value={value} onChange={e => updateField(section, '', e.target.value)} />
+                                                        )}
+                                                    </FormControl>
                                                 )}
-                                            </FormControl>
-                                        )}
 
-                                        {/* Contact */}
-                                        {section === 'contact' && Object.entries(value).map(([k, v]) => (
-                                            <FormControl key={k}>
-                                                <FormLabel fontSize="sm">{k.charAt(0).toUpperCase()+k.slice(1)}</FormLabel>
-                                                <Input size="sm" placeholder={k} value={v||''} onChange={e => updateField(section, k, e.target.value)} />
-                                            </FormControl>
-                                        ))}
+                                                {/* Contact */}
+                                                {section === 'contact' && Object.entries(value).map(([k, v]) => (
+                                                    <FormControl key={k}>
+                                                        <FormLabel fontSize="sm">{k.charAt(0).toUpperCase()+k.slice(1)}</FormLabel>
+                                                        <Input size="sm" placeholder={k} value={v||''} onChange={e => updateField(section, k, e.target.value)} />
+                                                    </FormControl>
+                                                ))}
 
-                                        {/* Expériences & Projets */}
-                                        {['experiences','projects'].includes(section) && Array.isArray(value) && (
-                                            <>
-                                                {value.map((obj,i)=>(
-                                                    <Box key={i} p={4} bg="background" rounded="md" border="1px solid" borderColor="step">
-                                                        <VStack spacing={3} align="stretch">
-                                                            <FormControl>
-                                                                <FormLabel fontSize="sm">Titre</FormLabel>
-                                                                <Input size="sm" value={obj.title||''} onChange={e=>updateField(section,`${i}.title`,e.target.value)} />
-                                                            </FormControl>
-                                                            {section==='experiences'&&(
-                                                                <FormControl>
-                                                                    <FormLabel fontSize="sm">Entreprise</FormLabel>
-                                                                    <Input size="sm" value={obj.company||''} onChange={e=>updateField(section,`${i}.company`,e.target.value)} />
-                                                                </FormControl>
-                                                            )}
-                                                            <HStack>
-                                                                <FormControl>
-                                                                    <FormLabel fontSize="sm">Début</FormLabel>
-                                                                    <Input size="sm" value={obj.start_date||''} onChange={e=>updateField(section,`${i}.start_date`,e.target.value)} />
-                                                                </FormControl>
-                                                                <FormControl>
-                                                                    <FormLabel fontSize="sm">Fin</FormLabel>
-                                                                    <Input size="sm" value={obj.end_date||''} onChange={e=>updateField(section,`${i}.end_date`,e.target.value)} />
-                                                                </FormControl>
-                                                            </HStack>
-                                                            <FormControl>
-                                                                <FormLabel fontSize="sm">Objectif</FormLabel>
-                                                                <Textarea size="sm" value={obj.description?.goal||''} onChange={e=>updateField(section,`${i}.description.goal`,e.target.value)} />
-                                                            </FormControl>
-                                                            <Box>
-                                                                <Text fontSize="sm" mb={1}>Tâches :</Text>
-                                                                <VStack spacing={1} align="stretch">
-                                                                    {obj.description?.tasks?.map((task,j)=>(
-                                                                        <HStack key={j}>
-                                                                            <Input size="sm" value={task} onChange={e=>updateField(section,`${i}.description.tasks.${j}`,e.target.value)} />
-                                                                            <IconButton icon={<FaTimes size={12}/>} size="xs" variant="ghost" onClick={()=>removeItem(section,`${i}.description.tasks`,j)} />
-                                                                        </HStack>
-                                                                    ))}
-                                                                    <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,`${i}.description.tasks`)} variant="outline">Ajouter tâche</Button>
+                                                {/* Expériences & Projets */}
+                                                {['experiences','projects'].includes(section) && Array.isArray(value) && (
+                                                    <>
+                                                        {value.map((obj,i)=>(
+                                                            <Box key={i} p={4} bg="background" rounded="md" border="1px solid" borderColor="step">
+                                                                <VStack spacing={3} align="stretch">
+                                                                    <FormControl>
+                                                                        <FormLabel fontSize="sm">Titre</FormLabel>
+                                                                        <Input size="sm" value={obj.title||''} onChange={e=>updateField(section,`${i}.title`,e.target.value)} />
+                                                                    </FormControl>
+                                                                    {section==='experiences'&&(
+                                                                        <FormControl>
+                                                                            <FormLabel fontSize="sm">Entreprise</FormLabel>
+                                                                            <Input size="sm" value={obj.company||''} onChange={e=>updateField(section,`${i}.company`,e.target.value)} />
+                                                                        </FormControl>
+                                                                    )}
+                                                                    <HStack>
+                                                                        <FormControl>
+                                                                            <FormLabel fontSize="sm">Début</FormLabel>
+                                                                            <Input size="sm" value={obj.start_date||''} onChange={e=>updateField(section,`${i}.start_date`,e.target.value)} />
+                                                                        </FormControl>
+                                                                        <FormControl>
+                                                                            <FormLabel fontSize="sm">Fin</FormLabel>
+                                                                            <Input size="sm" value={obj.end_date||''} onChange={e=>updateField(section,`${i}.end_date`,e.target.value)} />
+                                                                        </FormControl>
+                                                                    </HStack>
+                                                                    <FormControl>
+                                                                        <FormLabel fontSize="sm">Objectif</FormLabel>
+                                                                        <Textarea size="sm" value={obj.description?.goal||''} onChange={e=>updateField(section,`${i}.description.goal`,e.target.value)} />
+                                                                    </FormControl>
+                                                                    <Box>
+                                                                        <Text fontSize="sm" mb={1}>Tâches :</Text>
+                                                                        <VStack spacing={1} align="stretch">
+                                                                            {obj.description?.tasks?.map((task,j)=>(
+                                                                                <HStack key={j}>
+                                                                                    <Input size="sm" value={task} onChange={e=>updateField(section,`${i}.description.tasks.${j}`,e.target.value)} />
+                                                                                    <IconButton icon={<FaTimes size={12}/>} size="xs" variant="ghost" onClick={()=>removeItem(section,`${i}.description.tasks`,j)} />
+                                                                                </HStack>
+                                                                            ))}
+                                                                            <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,`${i}.description.tasks`)} variant="outline">Ajouter tâche</Button>
+                                                                        </VStack>
+                                                                    </Box>
                                                                 </VStack>
                                                             </Box>
-                                                        </VStack>
-                                                    </Box>
-                                                ))}
-                                                <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,null)} variant="outline">
-                                                    Ajouter {labelFor(section).toLowerCase()}
-                                                </Button>
-                                            </>
-                                        )}
+                                                        ))}
+                                                        <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,null)} variant="outline">
+                                                            Ajouter {labelFor(section).toLowerCase()}
+                                                        </Button>
+                                                    </>
+                                                )}
 
-                                        {/* Compétences techniques */}
-                                        {section==='skills'&&Array.isArray(value)&&(
-                                            <VStack spacing={2} align="stretch">
-                                                {value.map((item,i)=>(
-                                                    <HStack key={i}>
-                                                        <Input size="sm" placeholder="Compétence" value={item.name||''} onChange={e=>updateField(section,`${i}.name`,e.target.value)} />
-                                                        <IconButton icon={<FaTimes size={12}/>} size="xs" variant="ghost" onClick={()=>removeItem(section,null,i)} />
-                                                    </HStack>
-                                                ))}
-                                                <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,null)} variant="outline">
-                                                    Ajouter compétence
-                                                </Button>
-                                            </VStack>
-                                        )}
-
-                                        {/* Soft skills */}
-                                        {section==='soft_skills'&&Array.isArray(value)&&(
-                                            <VStack spacing={2} align="stretch">
-                                                {value.map((item,i)=>(
-                                                    <HStack key={i}>
-                                                        <Input size="sm" placeholder="Atout" value={item.name||''} onChange={e=>updateField(section,`${i}.name`,e.target.value)} />
-                                                        <IconButton icon={<FaTimes size={12}/>} size="xs" variant="ghost" onClick={()=>removeItem(section,null,i)} />
-                                                    </HStack>
-                                                ))}
-                                                <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,null)} variant="outline">
-                                                    Ajouter atout
-                                                </Button>
-                                            </VStack>
-                                        )}
-
-                                        {/* Langues */}
-                                        {section==='languages'&&Array.isArray(value)&&(
-                                            <VStack spacing={2} align="stretch">
-                                                {value.map((item,i)=>(
-                                                    <HStack key={i} spacing={2}>
-                                                        <Input size="sm" placeholder="Langue" value={item.language||''} onChange={e=>updateField(section,`${i}.language`,e.target.value)} />
-                                                        <Input size="sm" placeholder="Niveau" value={item.level||''} onChange={e=>updateField(section,`${i}.level`,e.target.value)} />
-                                                        <IconButton icon={<FaTimes size={12}/>} size="xs" variant="ghost" onClick={()=>removeItem(section,null,i)} />
-                                                    </HStack>
-                                                ))}
-                                                <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,null)} variant="outline">
-                                                    Ajouter langue
-                                                </Button>
-                                            </VStack>
-                                        )}
-
-                                        {/* Formations */}
-                                        {section==='educations'&&Array.isArray(value)&&(
-                                            <VStack spacing={2} align="stretch">
-                                                {value.map((item,i)=>(
-                                                    <Box key={i} p={3} border="1px solid" borderColor="step" rounded="md">
-                                                        <VStack spacing={2} align="stretch">
-                                                            <FormControl>
-                                                                <FormLabel fontSize="sm">Établissement</FormLabel>
-                                                                <Input size="sm" value={item.institution||''} onChange={e=>updateField(section,`${i}.institution`,e.target.value)} />
-                                                            </FormControl>
-                                                            <HStack>
-                                                                <FormControl>
-                                                                    <FormLabel fontSize="sm">Début</FormLabel>
-                                                                    <Input size="sm" value={item.start_date||''} onChange={e=>updateField(section,`${i}.start_date`,e.target.value)} />
-                                                                </FormControl>
-                                                                <FormControl>
-                                                                    <FormLabel fontSize="sm">Fin</FormLabel>
-                                                                    <Input size="sm" value={item.end_date||''} onChange={e=>updateField(section,`${i}.end_date`,e.target.value)} />
-                                                                </FormControl>
+                                                {/* Compétences techniques */}
+                                                {section==='skills'&&Array.isArray(value)&&(
+                                                    <VStack spacing={2} align="stretch">
+                                                        {value.map((item,i)=>(
+                                                            <HStack key={i}>
+                                                                <Input size="sm" placeholder="Compétence" value={item.name||''} onChange={e=>updateField(section,`${i}.name`,e.target.value)} />
+                                                                <IconButton icon={<FaTimes size={12}/>} size="xs" variant="ghost" onClick={()=>removeItem(section,null,i)} />
                                                             </HStack>
-                                                            <FormControl>
-                                                                <FormLabel fontSize="sm">Description</FormLabel>
-                                                                <Textarea size="sm" value={item.description||''} onChange={e=>updateField(section,`${i}.description`,e.target.value)} />
-                                                            </FormControl>
-                                                            <IconButton icon={<FaTimes size={12}/>} size="xs" variant="ghost" onClick={()=>removeItem(section,null,i)} alignSelf="flex-end" />
-                                                        </VStack>
-                                                    </Box>
-                                                ))}
-                                                <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,null)} variant="outline">
-                                                    Ajouter formation
-                                                </Button>
-                                            </VStack>
-                                        )}
-                                        {/* Centres d’intérêt */}
-                                        {section==='hobbies'&&Array.isArray(value)&&(
-                                            <VStack spacing={2} align="stretch">
-                                                {value.map((item,i)=>(
-                                                    <HStack key={i}>
-                                                        <Input size="sm" placeholder="Centre d’intérêt" value={item||''} onChange={e=>updateField(section,`${i}`,e.target.value)} />
-                                                        <IconButton icon={<FaTimes size={12}/>} size="xs" variant="ghost" onClick={()=>removeItem(section,null,i)} />
-                                                    </HStack>
-                                                ))}
-                                                <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,null)} variant="outline">
-                                                    Ajouter centre d’intérêt
-                                                </Button>
-                                            </VStack>
-                                        )}
-                                        {/* Certifications */}
-                                        {section==='certifications'&&Array.isArray(value)&&(
-                                            <VStack spacing={2} align="stretch">
-                                                {value.map((item,i)=>(
-                                                    <Box key={i} p={3} border="1px solid" borderColor="step" rounded="md">
-                                                        <VStack spacing={2} align="stretch">
-                                                            <FormControl>
-                                                                <FormLabel fontSize="sm">Nom</FormLabel>
-                                                                <Input size="sm" value={item.name||''} onChange={e=>updateField(section,`${i}.name`,e.target.value)} />
-                                                            </FormControl>
-                                                            <FormControl>
-                                                                <FormLabel fontSize="sm">Organisme</FormLabel>
-                                                                <Input size="sm" value={item.issuer||''} onChange={e=>updateField(section,`${i}.issuer`,e.target.value)} />
-                                                            </FormControl>
-                                                            <FormControl>
-                                                                <FormLabel fontSize="sm">Date</FormLabel>
-                                                                <Input size="sm" value={item.date||''} onChange={e=>updateField(section,`${i}.date`,e.target.value)} />
-                                                            </FormControl>
-                                                            <IconButton icon={<FaTimes size={12}/>} size="xs" variant="ghost" onClick={()=>removeItem(section,null,i)} alignSelf="flex-end" />
-                                                        </VStack>
-                                                    </Box>
-                                                ))}
-                                                <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,null)} variant="outline">
-                                                    Ajouter certification
-                                                </Button>
-                                            </VStack>
-                                        )}
+                                                        ))}
+                                                        <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,null)} variant="outline">
+                                                            Ajouter compétence
+                                                        </Button>
+                                                    </VStack>
+                                                )}
 
-                                        {/* Mots-clés en commun */}
-                                        {section==='keywords_in_common'&&Array.isArray(value)&&(
-                                            <VStack spacing={2} align="stretch">
-                                                {value.map((kw,i)=>(
-                                                    <HStack key={i}>
-                                                        <Input size="sm" placeholder="Mot-clé" value={kw||''} onChange={e=>updateField(section,`${i}`,e.target.value)} />
-                                                    </HStack>
-                                                ))}
-                                            </VStack>
-                                        )}
+                                                {/* Soft skills */}
+                                                {section==='soft_skills'&&Array.isArray(value)&&(
+                                                    <VStack spacing={2} align="stretch">
+                                                        {value.map((item,i)=>(
+                                                            <HStack key={i}>
+                                                                <Input size="sm" placeholder="Atout" value={item.name||''} onChange={e=>updateField(section,`${i}.name`,e.target.value)} />
+                                                                <IconButton icon={<FaTimes size={12}/>} size="xs" variant="ghost" onClick={()=>removeItem(section,null,i)} />
+                                                            </HStack>
+                                                        ))}
+                                                        <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,null)} variant="outline">
+                                                            Ajouter atout
+                                                        </Button>
+                                                    </VStack>
+                                                )}
 
-                                    </VStack>
-                                </AccordionPanel>
+                                                {/* Langues */}
+                                                {section==='languages'&&Array.isArray(value)&&(
+                                                    <VStack spacing={2} align="stretch">
+                                                        {value.map((item,i)=>(
+                                                            <HStack key={i} spacing={2}>
+                                                                <Input size="sm" placeholder="Langue" value={item.language||''} onChange={e=>updateField(section,`${i}.language`,e.target.value)} />
+                                                                <Input size="sm" placeholder="Niveau" value={item.level||''} onChange={e=>updateField(section,`${i}.level`,e.target.value)} />
+                                                                <IconButton icon={<FaTimes size={12}/>} size="xs" variant="ghost" onClick={()=>removeItem(section,null,i)} />
+                                                            </HStack>
+                                                        ))}
+                                                        <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,null)} variant="outline">
+                                                            Ajouter langue
+                                                        </Button>
+                                                    </VStack>
+                                                )}
+
+                                                {/* Formations */}
+                                                {section==='educations'&&Array.isArray(value)&&(
+                                                    <VStack spacing={2} align="stretch">
+                                                        {value.map((item,i)=>(
+                                                            <Box key={i} p={3} border="1px solid" borderColor="step" rounded="md">
+                                                                <VStack spacing={2} align="stretch">
+                                                                    <FormControl>
+                                                                        <FormLabel fontSize="sm">Établissement</FormLabel>
+                                                                        <Input size="sm" value={item.institution||''} onChange={e=>updateField(section,`${i}.institution`,e.target.value)} />
+                                                                    </FormControl>
+                                                                    <HStack>
+                                                                        <FormControl>
+                                                                            <FormLabel fontSize="sm">Début</FormLabel>
+                                                                            <Input size="sm" value={item.start_date||''} onChange={e=>updateField(section,`${i}.start_date`,e.target.value)} />
+                                                                        </FormControl>
+                                                                        <FormControl>
+                                                                            <FormLabel fontSize="sm">Fin</FormLabel>
+                                                                            <Input size="sm" value={item.end_date||''} onChange={e=>updateField(section,`${i}.end_date`,e.target.value)} />
+                                                                        </FormControl>
+                                                                    </HStack>
+                                                                    <FormControl>
+                                                                        <FormLabel fontSize="sm">Description</FormLabel>
+                                                                        <Textarea size="sm" value={item.description||''} onChange={e=>updateField(section,`${i}.description`,e.target.value)} />
+                                                                    </FormControl>
+                                                                    <IconButton icon={<FaTimes size={12}/>} size="xs" variant="ghost" onClick={()=>removeItem(section,null,i)} alignSelf="flex-end" />
+                                                                </VStack>
+                                                            </Box>
+                                                        ))}
+                                                        <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,null)} variant="outline">
+                                                            Ajouter formation
+                                                        </Button>
+                                                    </VStack>
+                                                )}
+                                                {/* Centres d’intérêt */}
+                                                {section==='hobbies'&&Array.isArray(value)&&(
+                                                    <VStack spacing={2} align="stretch">
+                                                        {value.map((item,i)=>(
+                                                            <HStack key={i}>
+                                                                <Input size="sm" placeholder="Centre d’intérêt" value={item||''} onChange={e=>updateField(section,`${i}`,e.target.value)} />
+                                                                <IconButton icon={<FaTimes size={12}/>} size="xs" variant="ghost" onClick={()=>removeItem(section,null,i)} />
+                                                            </HStack>
+                                                        ))}
+                                                        <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,null)} variant="outline">
+                                                            Ajouter centre d’intérêt
+                                                        </Button>
+                                                    </VStack>
+                                                )}
+                                                {/* Certifications */}
+                                                {section==='certifications'&&Array.isArray(value)&&(
+                                                    <VStack spacing={2} align="stretch">
+                                                        {value.map((item,i)=>(
+                                                            <Box key={i} p={3} border="1px solid" borderColor="step" rounded="md">
+                                                                <VStack spacing={2} align="stretch">
+                                                                    <FormControl>
+                                                                        <FormLabel fontSize="sm">Nom</FormLabel>
+                                                                        <Input size="sm" value={item.name||''} onChange={e=>updateField(section,`${i}.name`,e.target.value)} />
+                                                                    </FormControl>
+                                                                    <FormControl>
+                                                                        <FormLabel fontSize="sm">Organisme</FormLabel>
+                                                                        <Input size="sm" value={item.issuer||''} onChange={e=>updateField(section,`${i}.issuer`,e.target.value)} />
+                                                                    </FormControl>
+                                                                    <FormControl>
+                                                                        <FormLabel fontSize="sm">Date</FormLabel>
+                                                                        <Input size="sm" value={item.date||''} onChange={e=>updateField(section,`${i}.date`,e.target.value)} />
+                                                                    </FormControl>
+                                                                    <IconButton icon={<FaTimes size={12}/>} size="xs" variant="ghost" onClick={()=>removeItem(section,null,i)} alignSelf="flex-end" />
+                                                                </VStack>
+                                                            </Box>
+                                                        ))}
+                                                        <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,null)} variant="outline">
+                                                            Ajouter certification
+                                                        </Button>
+                                                    </VStack>
+                                                )}
+
+                                                {/* Mots-clés en commun */}
+                                                {section==='keywords_in_common'&&Array.isArray(value)&&(
+                                                    <VStack spacing={2} align="stretch">
+                                                        {value.map((kw,i)=>(
+                                                            <HStack key={i}>
+                                                                <Input size="sm" placeholder="Mot-clé" value={kw||''} onChange={e=>updateField(section,`${i}`,e.target.value)} />
+                                                            </HStack>
+                                                        ))}
+                                                    </VStack>
+                                                )}
+
+                                            </VStack>
+
+                                        </AccordionPanel>
+                                    </>
+                                )}
                             </AccordionItem>
                         );
                     })}
                 </Accordion>
 
+
                 <Divider my={8} />
 
-                <Flex justify="space-between">
+
+            </Box>
+
+            <Box maxW="4xl" mx="auto" mt={6} p={4}>
+                <HStack justify="space-between">
                     <Button onClick={onBack} variant="outline" colorScheme="gray">
                         Aperçu
                     </Button>
                     <Button onClick={onGenerate} colorScheme="blue">
                         Générer le CV en PDF
                     </Button>
-                </Flex>
+                </HStack>
             </Box>
         </Box>
 

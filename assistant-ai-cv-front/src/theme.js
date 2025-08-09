@@ -11,7 +11,7 @@ const config = {
 const styles = {
     global: (props) => ({
         body: {
-            bg: mode("white", "gray.900")(props),
+            bg: mode("gray.100", "gray.900")(props),
             color: mode("gray.800", "whiteAlpha.900")(props),
         },
     }),
@@ -29,7 +29,7 @@ const theme = extendTheme({
     semanticTokens: {
         colors: {
             background: {
-                default: "white",
+                default: "gray.100",
                 _dark: "gray.900",
             },
             text: {
@@ -41,7 +41,7 @@ const theme = extendTheme({
                 _dark: "gray.400",
             },
             card: {
-                default: "gray.100",
+                default: "white",
                 _dark: "gray.700",
             },
             accent: {

@@ -4,7 +4,6 @@ import { useDropzone } from 'react-dropzone';
 import {
     Box,
     Stack,
-    Heading,
     Text,
     Button,
     Textarea,
@@ -45,15 +44,14 @@ export default function UploadForm({ onSubmit }) {
             maxW="4xl"
             mx="auto"
             p={{ base: 4, md: 8 }}
-            bg={{ base: 'gray.50', _dark: 'gray.700' }}
+            bg="card"                 // carte: blanc (light) / gris .700 (dark)
+            color="text"
             borderWidth={1}
-            borderColor={{ base: 'gray.200', _dark: 'gray.600' }}
+            borderColor="step"        // token de bordure
             borderRadius="md"
             boxShadow="sm"
         >
             <Stack spacing={6} align="stretch">
-               
-
                 <Stack
                     spacing={8}
                     direction={{ base: 'column', md: 'row' }}
@@ -61,23 +59,23 @@ export default function UploadForm({ onSubmit }) {
                 >
                     {/* Zone de dépôt du CV */}
                     <Box flex={1}>
-                        <Text fontWeight="semibold" mb={2}>
+                        <Text fontWeight="semibold" mb={2} color="text">
                             Uploadez votre CV
                         </Text>
                         <Box
                             {...getRootProps()}
                             p={8}
                             border="2px dashed"
-                            borderColor={{ base: 'gray.300', _dark: 'gray.500' }}
+                            borderColor="step"
                             borderRadius="md"
                             textAlign="center"
                             cursor="pointer"
-                            bg={{ base: 'white', _dark: 'gray.800' }}
+                            bg="card"             // suit le mode (cohérent avec la carte)
                         >
-                            <Icon as={LuUpload} boxSize={8} mb={2} color="gray.400" />
+                            <Icon as={LuUpload} boxSize={8} mb={2} color="subtext" />
                             {isDragActive
                                 ? <Text>Déposez le fichier ici…</Text>
-                                : <Text>Glissez & déposez ou cliquez pour sélectionner</Text>
+                                : <Text color="subtext">Glissez & déposez ou cliquez pour sélectionner</Text>
                             }
                             {file && <Text mt={2}>📎 {file.name}</Text>}
                             <input {...getInputProps()} />
@@ -86,7 +84,7 @@ export default function UploadForm({ onSubmit }) {
 
                     {/* Zone de texte de l'offre et bouton */}
                     <Box flex={1}>
-                        <Text fontWeight="semibold" mb={2}>
+                        <Text fontWeight="semibold" mb={2} color="text">
                             Copier-coller l'offre d'emploi
                         </Text>
                         <Textarea
@@ -94,14 +92,17 @@ export default function UploadForm({ onSubmit }) {
                             placeholder="Collez ici le texte de l'offre d'emploi"
                             value={offerText}
                             onChange={(e) => setOfferText(e.target.value)}
-                            bg={{ base: 'white', _dark: 'gray.800' }}
-                            borderColor={{ base: 'gray.300', _dark: 'gray.500' }}
-                            _placeholder={{ color: { base: 'gray.500', _dark: 'gray.400' } }}
+                            bg="card"
+                            borderColor="step"
+                            _placeholder={{ color: 'subtext' }}
                         />
                         <Button
                             type="submit"
                             mt={4}
-                            colorScheme="blue"
+                            bg="accent"           // bouton suit le thème
+                            color="buttonText"
+                            _hover={{ filter: 'brightness(1.05)' }}
+                            _active={{ filter: 'brightness(0.98)' }}
                             size="md"
                             width="100%"
                         >
