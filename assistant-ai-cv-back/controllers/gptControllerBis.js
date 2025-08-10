@@ -49,20 +49,27 @@ CRITICAL INSTRUCTIONS:
 
 * Output pure JSON only: response must start with “{” and end with “}”, with no extra text or formatting.
 * Properly escape all string values, including control characters (ASCII 0–31 except \\t, \\n, \\r).
-* Detect and set \`"language"\` field to the CV’s original language (\`"fr"\` or \`"en"\`); output all text in that language.
+* Detect and set "language" field to the CV’s original language ("fr" or "en"); output all text in that language.
 * Do NOT include duplicate keys; use null for missing or unavailable values.
 * Include every field defined in the schema; if a field has no data, return as empty string, object, or array.
-* Dates must be in “Month YYYY” format (e.g., "June 2024" for English CVs or "juin 2024" for French CVs) or the literal “present” (or “présent” in French).
-* For both \`"skills"\` and \`"soft_skills"\`, use only competencies found in recognized repositories**—ESCO (v1.2), DISCO, SFIA (EN/FR), ROME or O\\*NET—adopting their official labels (in the CV’s language) .
-* A reasonable number of skills
-* Add field \`"keywords_in_common"\`: list of shared keywords between CV and job offer; ensure each appears in the CV content.
-* For each experience and project, set \`"description"\` as an object with:
-  * \`"goal"\`: a concise statement of the challenge or objective,
-  * \`"items"\`: an array of bullet-point strings detailing context, responsibilities, technologies used, measurable outcomes, and how this relates to the job offer’s requirements.
-* Ensure that items in "educations", "projects" and "experiences" arrays are ordered in strict reverse chronological order (most recent first).* Write in an impersonal tone (third-person or passive voice; avoid first-person pronouns).
-* Explicitly personalize the CV: tailor phrasing, reorder sections, and emphasize achievements per the job offer’s priorities.
-* Do NOT invent or hallucinate new information; except that strongly implied details (such as skills or responsibilities evident from an experience or education) may be included if clearly supported by the CV.
-* Include a personalized \`"cv_title"\` and \`"profile"\` that reflect the priorities and terminology of the job offer .
+* Dates must be in “Month YYYY” format for English CVs or “mois YYYY” format for French CVs, with the literal “present” (EN) or “présent” (FR) if ongoing.
+* For both "skills" and "soft_skills", use only competencies found in recognized repositories — ESCO (v1.2), DISCO, SFIA (EN/FR), ROME or O*NET — adopting their official labels (in the CV’s language).
+* A reasonable number of skills is expected.
+* Add field "keywords_in_common": list of shared keywords between CV and job offer; ensure each appears in the CV content.
+* PERSONALIZATION TO THE JOB OFFER:
+  - Reorder to emphasize experiences/projects relevant to the offer.
+  - Integrate the offer’s keywords naturally (no keyword stuffing).
+  - Minimize or shorten less relevant content.
+* DESCRIPTION FIELDS:
+  - For each experience and project, "description": { "goal": string, "tasks": [string] } with concrete responsibilities, technologies, outcomes, and relevance to the offer.
+* ORDERING: "educations", "projects" and "experiences" must be in strict reverse chronological order (most recent first).
+* TONE: Impersonal or passive; avoid first-person pronouns.
+
+* NATURAL WRITING FOR TITLES & PROFILE:
+  - "cv_title": concise (3–7 words), plain language, mirrors the job title or closest equivalent from the offer; avoid ALL CAPS and buzzwords; adapt to local conventions of the detected language.
+  - "profile": 2–4 short sentences, natural and specific; use vocabulary from the offer, highlight relevant scope/stack/domain; quantify impact when the CV provides numbers; avoid generic claims (“motivated”, “dynamic”), clichés, and template phrasing; keep impersonal tone but human-sounding.
+
+* Do NOT invent or hallucinate content; only include strongly implied details if clearly supported by the CV.
 
 Schema:
 {
@@ -81,40 +88,49 @@ Schema:
   "skills": [
     { "name": string, "matched": boolean }
   ],
-  "soft_skills": [ { "name": string, "matched": boolean }],
+  "soft_skills": [
+    { "name": string, "matched": boolean }
+  ],
   "languages": [
-    { "language": string, "level": string , "matched": boolean }
+    { "language": string, "level": string, "matched": boolean }
   ],
   "experiences": [
     {
       "title": string,
       "company": string,
-      "start_date": "Month YYYY",
-      "end_date": "Month YYYY" | "present",
-      "technologies": [ { "name": string, "matched": boolean }],
-      "description":
-      {
-      "goal" : string , 
-      "tasks" : [string]
-      },
-   
+      "start_date": "Month YYYY" | "mois YYYY",
+      "end_date": "Month YYYY" | "mois YYYY" | "present" | "présent",
+      "technologies": [
+        { "name": string, "matched": boolean }
+      ],
+      "description": {
+        "goal": string,
+        "tasks": [string]
+      }
     }
   ],
   "educations": [
-    { "degree": string, "institution": string, "start_date": "Month YYYY", "end_date": "YMonth YYYY" | "present","extra_informations": string, "matched" : string }
+    {
+      "degree": string,
+      "institution": string,
+      "start_date": "Month YYYY" | "mois YYYY",
+      "end_date": "Month YYYY" | "mois YYYY" | "present" | "présent",
+      "extra_informations": string,
+      "matched": boolean
+    }
   ],
   "projects": [
     {
       "title": string,
-      "description":
-      {
-      "goal" : string , 
-      "tasks" : [string]
-      }
-      "technologies": [ { "name": string, "matched": boolean }],
-      "start_date": "Month YYYY" | null,
-      "end_date": "Month YYYY" | null
-      
+      "description": {
+        "goal": string,
+        "tasks": [string]
+      },
+      "technologies": [
+        { "name": string, "matched": boolean }
+      ],
+      "start_date": "Month YYYY" | "mois YYYY" | null,
+      "end_date": "Month YYYY" | "mois YYYY" | null
     }
   ],
   "certifications": [
@@ -124,6 +140,7 @@ Schema:
   "keywords_in_common": [string]
 }
 `;
+
 
 
 // Helper: nettoyage et validation JSON
