@@ -6,15 +6,17 @@ const gptRoutes  = require('./routes/gptRoutes');
 
 const extractionRoutes = require('./routes/extractionRoutes');
 const pdfRoutes= require('./routes/pdfRoutes');
+const matchRoutes = require('./routes/matchRoutes');
 
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use('/api/gpt', gptRoutes);
 app.use('/api/extraction', extractionRoutes);
 app.use('/api/pdf',pdfRoutes);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use('/match', matchRoutes);
 
 // Route racine / bienvenue
 app.get('/', (req, res) => {
