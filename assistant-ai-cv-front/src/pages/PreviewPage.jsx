@@ -25,7 +25,6 @@ export default function PreviewPage({ structuredCV, onEdit, onGenerate, onReset 
     return (
         <Box pos="absolute" inset="0" bg="background" color="text" overflowY="scroll"
         >
-            {/* Header commun */}
             <Nav />
 
             <Container maxW="6xl" py={{ base: 6, md: 10 }}>
@@ -33,8 +32,7 @@ export default function PreviewPage({ structuredCV, onEdit, onGenerate, onReset 
                    🔎 Aperçu du CV
                 </Heading>
 
-                {/* Cadre d’aperçu (adapte les couleurs en dark) */}
-                {/* Feuille A4 centrée, fidèle au rendu initial */}
+
                 <Box display="flex" justifyContent="center" mt={{ base: 4, md: 6 }}>
                     <Box
                         // Dimensions réduites et bords arrondis
