@@ -9,20 +9,20 @@
         body { font-family: Arial, sans-serif; color: #333; background: #fff; line-height: 1.4; }
         /* Header */
         .cv-header {
-            background: none;      /* plus de couleur de fond */
+            background: none;
             text-align: center;
-            padding: 0;            /* plus d’espace inutile */
+            padding: 0;
             position: relative;
         }
         .cv-header .header-block {
-            position: static;      /* place-le dans le flux normal */
-            transform: none;       /* plus de décalage horizontal */
-            margin: 20px auto; /* centré horizontalement, 20px de marge verticale */
+            position: static;
+            transform: none;
+            margin: 20px auto;
             background: #fff;
             border: 1px solid #000;
             padding: 10px 20px;
-            display: inline-block;  /* passe en inline-block */
-            width: auto;            /* taille au contenu */
+            display: inline-block;
+            width: auto;
         }
         .header-block{margin-top: 100px;}
         .cv-header h1 { font-size: 20px; text-transform: uppercase; margin-bottom: 4px; }
@@ -31,13 +31,12 @@
         .container { display: grid; grid-template-columns: 30% 70%; margin-top: 0px; }
         .sidebar {
             background: #98A1BC;
-            margin-top: -120px;     /* remonte le bloc de 80px (hauteur approximative du header) */
-            padding: 180px 20px 20px; /* compense ce recul pour le contenu */
+            margin-top: -120px;
+            padding: 180px 20px 20px;
         }
         .sidebar section {
-            margin-bottom: 16px; /* au lieu de 6px */
+            margin-bottom: 16px;
         }
-
         .content { padding: 20px 30px; }
         h3 { font-size: 12px; text-transform: uppercase; margin-bottom: 8px; padding-bottom: 2px; border-bottom: 1px solid #ccc; }
         /* Lists */
@@ -49,44 +48,21 @@
             font-size: 13px;
             margin-bottom: 6px;
         }
-
         /* Items */
         .item-container { margin-bottom: 24px; }
-        .education-item {
-            margin-bottom: 8px;  /* espace spécifique aux items de formation */
-        }
+        .education-item { margin-bottom: 8px; }
         .timeline-item, .project-item, .education-item { border-left: 2px solid #ccc; padding-left: 16px; }
         .entity { font-weight: bold; font-size: 13px; margin-bottom: 4px; }
         .item-subheader { font-size: 12px; color: #666; margin-bottom: 6px; }
         .item-goal { font-size: 12px; color: #444; font-weight: 600; margin-bottom: 6px; }
-
-        /* Bullet points & spacing réduite pour les tâches */
         .timeline-item ul,
-        .project-item ul {
-            list-style: disc;      /* puces classiques */
-            padding-left: 1em;     /* indent des puces */
-        }
+        .project-item ul { list-style: disc; padding-left: 1em; }
         .timeline-item ul li,
-        .project-item ul li {
-            font-size: 12px;       /* police plus petite */
-            margin-bottom: 4px;    /* espacement vertical réduit */
-        }
-        .item-technologies {
-            font-size: 12px;
-            margin-top: 4px;
-        }
-        .item-technologies strong {
-            font-weight: 600;
-        }
-        .contact-list {
-            list-style: none;
-            padding-left: 0;
-        }
-        .contact-list li::before {
-            content: none;
-        }
-
-
+        .project-item ul li { font-size: 12px; margin-bottom: 4px; }
+        .item-technologies { font-size: 12px; margin-top: 4px; }
+        .item-technologies strong { font-weight: 600; }
+        .contact-list { list-style: none; padding-left: 0; }
+        .contact-list li::before { content: none; }
         /* Print adjustments */
         @media print {
             .cv-header, .sidebar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -96,25 +72,37 @@
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-
 </head>
 <body>
-<% /* Month mapping function */ %>
 <%
-const monthNames = {
+const MONTHS = {
     fr: ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'],
     en: ['January','February','March','April','May','June','July','August','September','October','November','December']
 };
-function fmt(str) {
-    if (!str) return '';
-    const parts = str.split(/-|\s+/);
-    if (parts.length === 2 && parts[0].length === 4) {
-        const [y, m] = parts;
-        const idx = parseInt(m, 10) - 1;
-        const mn = monthNames[language][idx] || m;
-        return mn.charAt(0).toUpperCase() + mn.slice(1) + ' ' + y;
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+function fmtDate(input) {
+    if (!input) return '';
+    const lang = (language === 'fr') ? 'fr' : 'en';
+    const alt  = (lang === 'fr') ? 'en' : 'fr';
+    const raw  = String(input).trim();
+    const low = raw.toLowerCase();
+    if (low === 'present' || low === 'présent') return (lang === 'fr') ? 'présent' : 'present';
+    const m1 = raw.match(/^(\d{4})-(\d{2})$/);
+    if (m1) {
+        const y = m1[1];
+        const idx = Math.max(0, Math.min(11, parseInt(m1[2], 10) - 1));
+        return cap(MONTHS[lang][idx]) + ' ' + y;
     }
-    return str;
+    const m2 = raw.match(/^([A-Za-zÀ-ÿ]+)\s+(\d{4})$/);
+    if (m2) {
+        const name = m2[1].toLowerCase();
+        const y = m2[2];
+        let idx = MONTHS[lang].findIndex(m => m.toLowerCase() === name);
+        if (idx === -1) idx = MONTHS[alt].findIndex(m => m.toLowerCase() === name);
+        if (idx !== -1) return cap(MONTHS[lang][idx]) + ' ' + y;
+        return raw;
+    }
+    return raw;
 }
 %>
 <header class="cv-header">
@@ -123,52 +111,32 @@ function fmt(str) {
         <h2><%= cv_title %></h2>
     </div>
 </header>
-
 <div class="container">
     <aside class="sidebar">
         <section>
             <h3><%= titles.contact_block %></h3>
             <ul class="contact-list">
                 <% if (contact.email) { %>
-                    <li>
-                        <i class="fas fa-envelope" aria-hidden="true"></i>
-                        <span><%= contact.email %></span>
-                    </li>
+                    <li><i class="fas fa-envelope"></i> <span><%= contact.email %></span></li>
                 <% } %>
                 <% if (contact.phone) { %>
-                    <li>
-                        <i class="fas fa-phone" aria-hidden="true"></i>
-                        <span><%= contact.phone %></span>
-                    </li>
+                    <li><i class="fas fa-phone"></i> <span><%= contact.phone %></span></li>
                 <% } %>
                 <% if (contact.address) { %>
-                    <li>
-                        <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
-                        <span><%= contact.address %></span>
-                    </li>
+                    <li><i class="fas fa-map-marker-alt"></i> <span><%= contact.address %></span></li>
                 <% } %>
                 <% if (contact.linkedin) { %>
-                    <li>
-                        <i class="fab fa-linkedin" aria-hidden="true"></i>
-                        <a href="<%= contact.linkedin %>" target="_blank" rel="noopener"><%= contact.linkedin %></a>
-                    </li>
+                    <li><i class="fab fa-linkedin"></i> <a href="<%= contact.linkedin %>" target="_blank"><%= contact.linkedin %></a></li>
                 <% } %>
                 <% if (contact.github) { %>
-                    <li>
-                        <i class="fab fa-github" aria-hidden="true"></i>
-                        <a href="<%= contact.github %>" target="_blank" rel="noopener"><%= contact.github %></a>
-                    </li>
+                    <li><i class="fab fa-github"></i> <a href="<%= contact.github %>" target="_blank"><%= contact.github %></a></li>
                 <% } %>
                 <% if (contact.website) { %>
-                    <li>
-                        <i class="fas fa-globe" aria-hidden="true"></i>
-                        <a href="<%= contact.website %>" target="_blank" rel="noopener"><%= contact.website %></a>
-                    </li>
+                    <li><i class="fas fa-globe"></i> <a href="<%= contact.website %>" target="_blank"><%= contact.website %></a></li>
                 <% } %>
             </ul>
         </section>
-
-    <% if (languages?.length) { %>
+        <% if (languages?.length) { %>
             <section>
                 <h3><%= titles.languages %></h3>
                 <ul>
@@ -189,16 +157,12 @@ function fmt(str) {
                 <h3><%= titles.soft_skills %></h3>
                 <ul>
                     <% soft_skills.forEach(s => { %>
-                        <li><%- s.matched
-                                    ? '<strong>' + s.name + '</strong>'
-                                    : s.name
-                            %></li>
+                        <li><%- s.matched ? '<strong>' + s.name + '</strong>' : s.name %></li>
                     <% }) %>
                 </ul>
             </section>
         <% } %>
-
-    <% if (skills?.length) { %>
+        <% if (skills?.length) { %>
             <section>
                 <h3><%= titles.skills %></h3>
                 <ul>
@@ -217,55 +181,46 @@ function fmt(str) {
             </section>
         <% } %>
         <% if (educations?.length) { %>
-                <section>
-                    <h3><%= titles.educations %></h3>
-                    <% educations.forEach(ed => { %>
-                        <div class="item-container education-item">
-                            <div class="entity"><%= ed.degree %></div>
-                            <div class="item-subheader">
-                                <%= ed.institution %> |
-                                <%= ed.start_date %> –
-                                <%= ed.end_date %>
-                            </div>
-                            <% if (ed.extra_information && ed.extra_information.length) { %>
-                                <ul class="education-extra-info">
-                                    <% ed.extra_information.forEach(info => { %>
-                                        <li><%= info %></li>
-                                    <% }) %>
-                                </ul>
-                            <% } %>
+            <section>
+                <h3><%= titles.educations %></h3>
+                <% educations.forEach(ed => { %>
+                    <div class="item-container education-item">
+                        <div class="entity"><%= ed.degree %></div>
+                        <div class="item-subheader">
+                            <%= ed.institution %> | <%= fmtDate(ed.start_date) %> – <%= fmtDate(ed.end_date) %>
                         </div>
-                    <% }) %>
-                </section>
-
-            <% } %>
+                        <% if (ed.extra_information && ed.extra_information.length) { %>
+                            <ul class="education-extra-info">
+                                <% ed.extra_information.forEach(info => { %>
+                                    <li><%= info %></li>
+                                <% }) %>
+                            </ul>
+                        <% } %>
+                    </div>
+                <% }) %>
+            </section>
+        <% } %>
         <% if (experiences?.length) { %>
             <section>
                 <h3><%= titles.experiences %></h3>
                 <% experiences.forEach(ex => { %>
                     <div class="item-container timeline-item">
                         <div class="entity"><%= ex.title %></div>
-                        <div class="item-subheader"><%= ex.company %> | <%= ex.start_date%> – <%= ex.end_date %></div>
+                        <div class="item-subheader"><%= ex.company %> | <%= fmtDate(ex.start_date) %> – <%= fmtDate(ex.end_date) %></div>
                         <% if(ex.description?.goal){ %>
-                            <div class="item-goal">
-                                <%= language === 'fr' ? 'Enjeu : ' : 'Goal : ' %><%= ex.description.goal %>
-                            </div>
+                            <div class="item-goal"><%= language === 'fr' ? 'Enjeu : ' : 'Goal : ' %><%= ex.description.goal %></div>
                         <% } %>
                         <% if (ex.description?.tasks) { %>
                             <ul><% ex.description.tasks.forEach(t => { %><li><%= t %></li><% }) %></ul>
                         <% } %>
                         <% if (ex.technologies?.length) { %>
                             <div class="item-technologies">
-                                <strong><%= 'Technologies :' %></strong>
+                                <strong>Technologies :</strong>
                                 <% ex.technologies.forEach((tech, idx) => { %>
-                                    <%- tech.matched
-                                            ? '<strong>' + tech.name + '</strong>'
-                                            : tech.name
-                                    %><%= idx < ex.technologies.length - 1 ? ', ' : '' %>
+                                    <%- tech.matched ? '<strong>' + tech.name + '</strong>' : tech.name %><%= idx < ex.technologies.length - 1 ? ', ' : '' %>
                                 <% }) %>
                             </div>
                         <% } %>
-
                     </div>
                 <% }) %>
             </section>
@@ -276,7 +231,7 @@ function fmt(str) {
                 <% projects.forEach(pr => { %>
                     <div class="item-container project-item">
                         <div class="entity"><%= pr.title %></div>
-                        <div class="item-subheader"><%= pr.institution %> | <%= pr.start_date %> – <%= pr.end_date %></div>
+                        <div class="item-subheader"><%= pr.institution %> | <%= fmtDate(pr.start_date) %> – <%= fmtDate(pr.end_date) %></div>
                         <% if (pr.description?.goal) { %>
                             <div class="item-goal"><%= pr.description.goal %></div>
                         <% } %>
@@ -285,16 +240,12 @@ function fmt(str) {
                         <% } %>
                         <% if (pr.technologies?.length) { %>
                             <div class="item-technologies">
-                                <strong><%= 'Technologies :' %></strong>
+                                <strong>Technologies :</strong>
                                 <% pr.technologies.forEach((tech, idx) => { %>
-                                    <%- tech.matched
-                                            ? '<strong>' + tech.name + '</strong>'
-                                            : tech.name
-                                    %><%= idx < pr.technologies.length - 1 ? ', ' : '' %>
+                                    <%- tech.matched ? '<strong>' + tech.name + '</strong>' : tech.name %><%= idx < pr.technologies.length - 1 ? ', ' : '' %>
                                 <% }) %>
                             </div>
                         <% } %>
-
                     </div>
                 <% }) %>
             </section>
@@ -302,7 +253,7 @@ function fmt(str) {
         <% if (certifications?.length) { %>
             <section>
                 <h3><%= titles.certifications %></h3>
-                <ul><% certifications.forEach(c => { %><li><%= c.name %> – <%= c.issuer %> (<%= c.date %>)</li><% }) %></ul>
+                <ul><% certifications.forEach(c => { %><li><%= c.name %> – <%= c.issuer %> (<%= fmtDate(c.date) %>)</li><% }) %></ul>
             </section>
         <% } %>
     </main>
