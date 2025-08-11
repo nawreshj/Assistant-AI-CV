@@ -212,6 +212,7 @@ exports.extractBoth = async (req, res) => {
 
     try {
         const [cvResp, offerResp] = await Promise.all([
+
             openai.chat.completions.create({
                 model: 'gpt-4o-mini',
                 messages: [

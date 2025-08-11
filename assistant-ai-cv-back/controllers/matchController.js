@@ -1,27 +1,24 @@
 // controllers/matchController.js
 
-/** Utils de base **/
-function asArray(x) { return Array.isArray(x) ? x : []; }
+// utils rapides
+const asArray = (x) => (Array.isArray(x) ? x : []);
 
-// Normalisation légère pour comparer proprement (cv vs offre)
 function norm(s) {
     if (s == null) return '';
     return String(s)
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // retire accents
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
-        .replace(/\s*\([^)]*\)/g, '') // supprime "(ES6+)" etc.
+        .replace(/\s*\([^)]*\)/g, '')
         .trim();
 }
 
-// Lit liste de strings ou d’objets {name}/{language} et normalise
-function parseNames(list) {
-    return asArray(list)
-        .map(it => (typeof it === 'string' ? it : (it?.name ?? it?.language ?? '')))
+const parseNames = (list) =>
+    asArray(list)
+        .map((it) => (typeof it === 'string' ? it : (it?.name ?? it?.language ?? '')))
         .map(norm)
         .filter(Boolean);
-}
 
-/** Agrégation des technologies (exp + projets) **/
+// aggrège techs depuis exp + projets
 function flattenTechnologies(cv) {
     const techs = [];
     for (const ex of asArray(cv?.experiences)) {
@@ -33,80 +30,100 @@ function flattenTechnologies(cv) {
     return techs;
 }
 
-/** Ensembles “matched:true” côté CV **/
-function cvMatchedSkillSet(cv) {
+// ensembles matched côté CV
+const cvMatchedSkillSet = (cv) => {
     const set = new Set();
     for (const s of asArray(cv?.skills)) if (s?.matched === true) set.add(norm(s.name));
     return set;
-}
+};
+
 function cvMatchedTechSet(cv) {
     const set = new Set();
     for (const t of flattenTechnologies(cv)) if (t?.matched === true) set.add(norm(t.name));
     return set;
 }
-function cvMatchedSoftSet(cv) {
+
+const cvMatchedSoftSet = (cv) => {
     const set = new Set();
     for (const s of asArray(cv?.soft_skills)) if (s?.matched === true) set.add(norm(s.name));
     return set;
-}
-function cvMatchedLangSet(cv) {
+};
+
+const cvMatchedLangSet = (cv) => {
     const set = new Set();
     for (const l of asArray(cv?.languages)) if (l?.matched === true) set.add(norm(l.language));
     return set;
-}
-function cvKeywordSet(cv) {
-    return new Set(asArray(cv?.keywords_in_common).map(norm));
-}
+};
 
-/** Education : binaire (≥1 éducation matched) **/
-function anyEducationMatched(cv) {
-    return asArray(cv?.educations).some(e => e?.matched === true);
-}
+const cvKeywordSet = (cv) => new Set(asArray(cv?.keywords_in_common).map(norm));
 
-/** Poids internes (figés | somme ≈ 1) **/
+// éducation : au moins une “matched”
+const anyEducationMatched = (cv) => asArray(cv?.educations).some((e) => e?.matched === true);
+
+// poids (simple et suffisant)
 const WEIGHTS = Object.freeze({
     skills: 0.40,
     technologies: 0.35,
     languages: 0.05,
     soft_skills: 0.10,
     education: 0.05,
-    keywords: 0.05
+    keywords: 0.05,
 });
 
-// Couverture basée sur l’OFFRE (si l’offre ne demande rien → 1)
+// coverage basé offre
 function offerCoverage(coveredCount, offerTotal) {
     if (!offerTotal || offerTotal <= 0) return 1;
     return coveredCount / offerTotal;
 }
 
-/** -------- SCORE OFFER-BASED --------
- * Dénominateur = #exigences de l’offre par section
- * Le CV “couvre” une exigence si l’élément correspondant est présent côté CV avec matched:true
- */
+// ex: "francais courant" -> "francais"
+function baseLang(s) {
+    const n = norm(s);
+    const first = n.split(/\s+/)[0];
+    return first || n;
+}
+
+// matching moins strict pour éviter les faux négatifs
+const tokens = (s) => norm(s).split(/[^a-z0-9+.#]+/).filter(Boolean);
+
+function looseHas(cvSet, name) {
+    const t = tokens(name);
+    if (cvSet.has(norm(name))) return true;
+    for (const x of cvSet) {
+        const tx = tokens(x);
+        if (tx.some((tok) => t.includes(tok))) return true;
+    }
+    return false;
+}
+
+// ---- score basé offre
 function computeScoreOfferBased(cv, offer) {
-    // 1) Exigences normalisées
+    // normalisation
     const offSkills = parseNames(offer?.skills);
     const offTechs  = parseNames(offer?.technologies);
     const offSoft   = parseNames(offer?.soft_skills);
-    const offLangs  = parseNames(offer?.languages);
+    const offLangs  = parseNames(offer?.languages).map(baseLang);
     const offEdu    = parseNames(offer?.education);
     const offKw     = parseNames(offer?.keywords || offer?.keywords_required);
 
-    // 2) Couvertures côté CV (ensembles matched)
+    // // debug:
+    // console.log('offer langs raw:', offer?.languages, '->', offLangs);
+
+    // sets côté CV
     const cvSkills = cvMatchedSkillSet(cv);
     const cvTechs  = cvMatchedTechSet(cv);
     const cvSoft   = cvMatchedSoftSet(cv);
-    const cvLangs  = cvMatchedLangSet(cv);
+    const cvLangs  = new Set(Array.from(cvMatchedLangSet(cv)).map(baseLang));
     const cvKw     = cvKeywordSet(cv);
 
-    // 3) Comptes couverts
-    const coveredSkills = offSkills.filter(n => cvSkills.has(n)).length;
-    const coveredTechs  = offTechs.filter(n => cvTechs.has(n)).length;
-    const coveredSoft   = offSoft.filter(n => cvSoft.has(n)).length;
-    const coveredLang   = offLangs.filter(n => cvLangs.has(n)).length;
-    const coveredKw     = offKw.filter(n => cvKw.has(n)).length;
+    // comptes couverts
+    const coveredSkills = offSkills.filter((n) => cvSkills.has(n)).length;
+    const coveredTechs  = offTechs.filter((n) => cvTechs.has(n)).length;
+    const coveredSoft   = offSoft.filter((n) => cvSoft.has(n)).length;
+    const coveredLang   = offLangs.filter((n) => cvLangs.has(n)).length;
+    const coveredKw     = offKw.filter((n) => cvKw.has(n)).length;
 
-    // 4) Couvertures (0..1) – dénominateur = offre
+    // coverage sur 0..1
     const covSkills = offerCoverage(coveredSkills, offSkills.length);
     const covTechs  = offerCoverage(coveredTechs,  offTechs.length);
     const covSoft   = offerCoverage(coveredSoft,   offSoft.length);
@@ -114,7 +131,6 @@ function computeScoreOfferBased(cv, offer) {
     const covEdu    = offerCoverage(anyEducationMatched(cv) ? 1 : 0, offEdu.length);
     const covKw     = offerCoverage(coveredKw, offKw.length);
 
-    // 5) Score pondéré
     const score01 =
         WEIGHTS.skills * covSkills +
         WEIGHTS.technologies * covTechs +
@@ -131,32 +147,32 @@ function computeScoreOfferBased(cv, offer) {
             languages: Number(covLang.toFixed(3)),
             soft_skills: Number(covSoft.toFixed(3)),
             education: Number(covEdu.toFixed(3)),
-            keywords: Number(covKw.toFixed(3))
-        }
+            keywords: Number(covKw.toFixed(3)),
+        },
     };
 }
 
-/** -------- MISSING (basé offre) -------- */
+// ---- missing
 function computeMissing(cv, offer = {}) {
     const offSkills = parseNames(offer.skills);
     const offTechs  = parseNames(offer.technologies);
     const offSoft   = parseNames(offer.soft_skills);
-    const offLangs  = parseNames(offer.languages);
+    const offLangs  = parseNames(offer.languages).map(baseLang);
     const offEdu    = parseNames(offer.education);
     const offKw     = parseNames(offer.keywords || offer.keywords_required);
 
     const cvSkills = cvMatchedSkillSet(cv);
     const cvTechs  = cvMatchedTechSet(cv);
     const cvSoft   = cvMatchedSoftSet(cv);
-    const cvLangs  = cvMatchedLangSet(cv);
+    const cvLangs  = new Set(Array.from(cvMatchedLangSet(cv)).map(baseLang));
     const cvKw     = cvKeywordSet(cv);
 
-    const missingSkills = offSkills.filter(n => !cvSkills.has(n));
-    const missingTechs  = offTechs.filter(n => !cvTechs.has(n));
-    const missingSoft   = offSoft.filter(n => !cvSoft.has(n));
-    const missingLang   = offLangs.filter(n => !cvLangs.has(n));
+    const missingSkills = offSkills.filter((n) => !looseHas(cvSkills, n));
+    const missingTechs  = offTechs.filter((n) => !looseHas(cvTechs, n));
+    const missingSoft   = offSoft.filter((n) => !looseHas(cvSoft, n));
+    const missingKw     = offKw.filter((n) => !looseHas(cvKw, n));
+    const missingLang   = offLangs.filter((n) => !cvLangs.has(n));
     const missingEdu    = offEdu.length ? (anyEducationMatched(cv) ? [] : offEdu) : [];
-    const missingKw     = offKw.filter(n => !cvKw.has(n));
 
     return {
         skills: missingSkills,
@@ -164,46 +180,37 @@ function computeMissing(cv, offer = {}) {
         soft_skills: missingSoft,
         languages: missingLang,
         education: missingEdu,
-        keywords: missingKw
+        keywords: missingKw,
     };
 }
-/** -------- COVERED (items du CV marqués matched:true) -------- */
+
+// ---- covered (juste pour l'affichage positif)
 function listCoveredFromCv(cv) {
-    const skills = asArray(cv?.skills)
-        .filter(s => s?.matched === true)
-        .map(s => s?.name)
-        .filter(Boolean);
+    const skills = asArray(cv?.skills).filter((s) => s?.matched === true).map((s) => s?.name).filter(Boolean);
 
-    // agrège exp + projets
     const technologies = flattenTechnologies(cv)
-        .filter(t => t?.matched === true)
-        .map(t => t?.name)
+        .filter((t) => t?.matched === true)
+        .map((t) => t?.name)
         .filter(Boolean);
 
-    const soft_skills = asArray(cv?.soft_skills)
-        .filter(s => s?.matched === true)
-        .map(s => s?.name)
-        .filter(Boolean);
+    const soft_skills = asArray(cv?.soft_skills).filter((s) => s?.matched === true).map((s) => s?.name).filter(Boolean);
 
     const languages = asArray(cv?.languages)
-        .filter(l => l?.matched === true)
-        .map(l => (l?.level ? `${l.language} – ${l.level}` : l?.language))
+        .filter((l) => l?.matched === true)
+        .map((l) => (l?.level ? `${l.language} – ${l.level}` : l?.language))
         .filter(Boolean);
 
     const education = asArray(cv?.educations)
-        .filter(e => e?.matched === true)
-        .map(e => (e?.institution ? `${e.degree} – ${e.institution}` : e?.degree))
+        .filter((e) => e?.matched === true)
+        .map((e) => (e?.institution ? `${e.degree} – ${e.institution}` : e?.degree))
         .filter(Boolean);
 
-    // pas de flag matched pour keywords_in_common, on affiche ce que le CV fournit
     const keywords = asArray(cv?.keywords_in_common).filter(Boolean);
 
     return { skills, technologies, soft_skills, languages, education, keywords };
 }
 
-/** Endpoints **/
-
-// POST /match/score-with-offer
+// ---- endpoint
 exports.computeMatchScoreWithOffer = async (req, res) => {
     try {
         const cv = req.body?.cv || req.body?.cvJSON;
@@ -221,21 +228,3 @@ exports.computeMatchScoreWithOffer = async (req, res) => {
         return res.status(500).json({ error: 'Erreur lors du calcul du score avec offre.' });
     }
 };
-
-
-
-// POST /match/score  -> score CV only (pas de counts, pas de weights en param)
-exports.computeMatchScore = async (req, res) => {
-    try {
-        const cv = req.body?.cv || req.body?.cvJSON;
-        if (!cv) return res.status(400).json({ error: 'Champ "cv" manquant dans le corps de la requête.' });
-
-        const result = computeScore(cv);
-        return res.json(result);
-    } catch (err) {
-        console.error('Erreur computeMatchScore:', err);
-        return res.status(500).json({ error: 'Erreur lors du calcul du score.' });
-    }
-};
-
-

@@ -196,9 +196,7 @@ exports.extractBoth = async (req, res) => {
     if (!cvText || !offerText) {
         return res.status(400).json({ error: 'Missing cvText or offerText.' });
     }
-    //const cleanedCvText = sanitizeCvText(cvText);
-    //const cleanedOfferText = sanitizeCvText(offerText);
-    //console.log( cleanedCvText);
+
     try {
         console.log("Extraction des données CV et de l'offre avec GPT... ")
         const [cvResponse, offerResponse] = await Promise.all([
@@ -367,7 +365,7 @@ exports.reformulateResume = async (req, res) => {
             ],
             function_call: { name: 'generate_structured_cv' },
             temperature: 0.7,
-            max_tokens: 2500
+            max_tokens: 1800
         });
 
         const structuredCV = JSON.parse(response.choices[0].message.function_call.arguments);
