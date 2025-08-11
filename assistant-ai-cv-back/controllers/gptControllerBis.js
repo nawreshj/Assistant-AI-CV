@@ -4,7 +4,7 @@
 const { OpenAI } = require('openai');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// 1. Prompt pour extraction de CV
+//Prompt pour extraction de CV
 const systemPromptExtractCv = `
 You are a CV parser.
 Return ONLY a valid JSON object with these keys (omit or empty if absent):
@@ -27,7 +27,7 @@ Return ONLY a valid JSON object with these keys (omit or empty if absent):
 No markdown, no prose, no code blocks—only pure JSON.
 `;
 
-// 2. Prompt pour extraction de l'offre d'emploi
+//Prompt pour extraction de l'offre d'emploi
 const systemPromptExtractOffer = `
 You are a job-offer parser.
 Return ONLY a valid JSON object with these keys (omit or empty if absent):
@@ -35,13 +35,14 @@ Return ONLY a valid JSON object with these keys (omit or empty if absent):
   "job_title": string,
   "company": string,
   "required_skills": [string],
+  "technologies" : [string],
   "education_level_required": string,
   "languages_required": [string]
 }
 No markdown, no prose, no code blocks—only pure JSON.
 `;
 
-// 3. Prompt pour reformulation du CV final
+//Prompt pour reformulation du CV final
 const systemPromptReformulate = `
 You are an expert HR professional and resume consultant.
 
@@ -63,7 +64,10 @@ CRITICAL INSTRUCTIONS:
 * DESCRIPTION FIELDS:
   - For each experience and project, "description": { "goal": string, "tasks": [string] } with concrete responsibilities, technologies, outcomes, and relevance to the offer.
 * ORDERING: "educations", "projects" and "experiences" must be in strict reverse chronological order (most recent first).
-* TONE: Impersonal or passive; avoid first-person pronouns.
+* For "matched" fields in skills, soft_skills, languages and technologies:
+    - Mark as true if the CV's term matches , is a subset, synonym, or specialization of the offer's term (and vice versa).
+    - For languages specifically: match ONLY on the language name (e.g., "anglais"/"english" → same); ignore level or qualifiers such as "technique", "courant", "bilingue", "C1", "native", "professionnel". Case- and accent-insensitive.  
+
 
 * NATURAL WRITING FOR TITLES & PROFILE:
   - "cv_title": concise (3–7 words), plain language, mirrors the job title or closest equivalent from the offer; avoid ALL CAPS and buzzwords; adapt to local conventions of the detected language.
@@ -154,7 +158,7 @@ function isValidJson(raw) {
     }
 }
 
-// 1) Extraction CV seule
+//Extraction CV seule
 exports.extractCvPromptOnly = async (req, res) => {
     const { cvText } = req.body;
     if (!cvText) return res.status(400).json({ error: 'Missing cvText.' });
@@ -175,7 +179,7 @@ exports.extractCvPromptOnly = async (req, res) => {
     res.json(JSON.parse(cleaned));
 };
 
-// 2) Extraction Offre seule
+//Extraction Offre seule
 exports.extractOfferPromptOnly = async (req, res) => {
     const { offerText } = req.body;
     if (!offerText) return res.status(400).json({ error: 'Missing offerText.' });
@@ -196,7 +200,7 @@ exports.extractOfferPromptOnly = async (req, res) => {
     res.json(JSON.parse(cleaned));
 };
 
-// 3) Extraction CV + Offre en parallèle
+//Extraction CV + Offre en parallèle
 exports.extractBoth = async (req, res) => {
     const { cvText, offerText } = req.body;
     if (!cvText || !offerText) {
@@ -248,7 +252,7 @@ exports.extractBoth = async (req, res) => {
     }
 };
 
-// 4) Reformulation finale
+//Reformulation finale
 exports.reformulateResume = async (req, res) => {
     const { cvData, offerData } = req.body;
     if (!cvData || !offerData) return res.status(400).json({ error: 'Missing cvData or offerData.' });
