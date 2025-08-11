@@ -170,6 +170,26 @@ function computeMissing(cv, offer = {}) {
 
 /** Endpoints **/
 
+// POST /match/score-with-offer  -> score OFFER-BASED + missing
+exports.computeMatchScoreWithOffer = async (req, res) => {
+    try {
+        const cv = req.body?.cv || req.body?.cvJSON;
+        const offer = req.body?.offer || {};
+        if (!cv)    return res.status(400).json({ error: 'Champ "cv" manquant.' });
+        if (!offer) return res.status(400).json({ error: 'Champ "offer" manquant.' });
+
+        const base = computeScoreOfferBased(cv, offer);
+        const missing = computeMissing(cv, offer);
+
+        return res.json({ ...base, missing });
+    } catch (err) {
+        console.error('Erreur computeMatchScoreWithOffer:', err);
+        return res.status(500).json({ error: 'Erreur lors du calcul du score avec offre.' });
+    }
+};
+
+
+
 // POST /match/score  -> score CV only (pas de counts, pas de weights en param)
 exports.computeMatchScore = async (req, res) => {
     try {

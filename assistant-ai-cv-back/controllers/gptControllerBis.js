@@ -32,12 +32,15 @@ const systemPromptExtractOffer = `
 You are a job-offer parser.
 Return ONLY a valid JSON object with these keys (omit or empty if absent):
 {
-  "job_title": string,
-  "company": string,
-  "required_skills": [string],
-  "technologies" : [string],
-  "education_level_required": string,
-  "languages_required": [string]
+  
+  "job_title": string | null,
+  "company": string | null,
+  "skills": string[],
+  "technologies": string[],
+  "soft_skills": string[],
+  "languages": string[],
+  "education": string[],
+  "keywords": string[]
 }
 No markdown, no prose, no code blocks—only pure JSON.
 `;

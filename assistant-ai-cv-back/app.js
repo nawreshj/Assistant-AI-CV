@@ -16,7 +16,7 @@ app.use('/api/gpt', gptRoutes);
 app.use('/api/extraction', extractionRoutes);
 app.use('/api/pdf',pdfRoutes);
 
-app.use('/match', matchRoutes);
+app.use('/api/match', matchRoutes);
 
 // Route racine / bienvenue
 app.get('/', (req, res) => {

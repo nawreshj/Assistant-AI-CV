@@ -14,7 +14,7 @@ import Loading from '../components/Loading';
 import { getExtractionText } from '../api/extractionAPI';
 import { getExtractionGpt, getReformulationGpt } from '../api/gptApi';
 
-export default function GeneratePage({ setStructuredCV }) {
+export default function GeneratePage({ setStructuredCV, setStructuredOffer }) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError]       = useState('');
     const navigate               = useNavigate();
@@ -27,8 +27,22 @@ export default function GeneratePage({ setStructuredCV }) {
             const [cvText, offerText] = await getExtractionText(formData);
             const { cvData, offerData } = await getExtractionGpt({ cvText, offerText });
             const { structuredCV } = await getReformulationGpt({ cvData, offerData });
-
+            const structuredOffer = {
+                       job_title: offerData?.job_title ?? null,
+                       company: offerData?.company ?? null,
+                       skills: offerData?.skills ?? offerData?.required_skills ?? [],
+                       technologies: offerData?.technologies ?? [],
+                       soft_skills: offerData?.soft_skills ?? [],
+                       languages: offerData?.languages ?? offerData?.languages_required ?? [],
+                       education: Array.isArray(offerData?.education)
+                     ? offerData.education : (offerData?.education_level_required ? [offerData.education_level_required] : []),
+                       keywords: offerData?.keywords ?? []
+                 };
             setStructuredCV(structuredCV);
+            setStructuredOffer(structuredOffer);
+            sessionStorage.setItem('structuredCV', JSON.stringify(structuredCV));
+            sessionStorage.setItem('structuredOffer', JSON.stringify(structuredOffer));
+
             navigate('/preview');
         } catch (err) {
             console.error(err);

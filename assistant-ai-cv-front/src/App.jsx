@@ -8,23 +8,28 @@ import { downloadPdf } from './api/pdfApi';
 import HomePage from "./pages/HomePage.jsx";
 
 export default function App() {
-    const [structuredCV, setStructuredCV] = useState(null);
+    const [structuredCV, setStructuredCV] = React.useState(null);
+    const [structuredOffer, setStructuredOffer] = React.useState(null);
     const navigate = useNavigate();
 
     return (
         <div className="App">
             <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/generate" element={<GeneratePage setStructuredCV={setStructuredCV} />} />
+                <Route path="/generate" element={<GeneratePage setStructuredCV={setStructuredCV} setStructuredOffer={setStructuredOffer}/>} />
                 <Route
                     path="/preview"
                     element={
                         <PreviewPage
                             structuredCV={structuredCV}
+                            structuredOffer={structuredOffer}
                             onEdit={() => navigate('/edit')}
                             onGenerate={() => downloadPdf(structuredCV)}
-                            onReset={() => navigate('/generate')}
-                        />
+                            onReset={() => {                            // ⬅️ reset propre
+                                setStructuredCV(null);
+                                setStructuredOffer(null);
+                                navigate('/generate');
+                            }}                        />
                     }
                 />
                 <Route
