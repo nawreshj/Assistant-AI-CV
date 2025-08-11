@@ -75,8 +75,14 @@ export default function UploadForm({ onSubmit }) {
                             <Icon as={LuUpload} boxSize={8} mb={2} color="subtext" />
                             {isDragActive
                                 ? <Text>Déposez le fichier ici…</Text>
-                                : <Text color="subtext">Glissez & déposez ou cliquez pour sélectionner</Text>
+                                : <Text color="subtext">
+                                    Glissez & déposez ou cliquez pour sélectionner
+                                    <Text as="span" display="block" fontSize="xs" color="gray.500" mt={1}>
+                                        Formats acceptés : PDF, DOCX, DOC, ODT, JPG, JPEG, PNG, TIFF, BMP, HEIC/HEIF, WEBP
+                                    </Text>
+                                </Text>
                             }
+
                             {file && <Text mt={2}>📎 {file.name}</Text>}
                             <input {...getInputProps()} />
                         </Box>

@@ -3,44 +3,44 @@ import React, { useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-    Box,
-    Container,
-    Heading,
-    Stack,
-    Button,
-    HStack,
-    Tooltip,
-    Skeleton,
+    Box, Container, Heading, Stack, Button, HStack, Tooltip, Skeleton,
     Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton,
-    CircularProgress, CircularProgressLabel,
-    Text,
-    Divider,
-    Progress,
-    Tag,
-    Wrap, WrapItem,
-    useDisclosure,
+    CircularProgress, CircularProgressLabel, Text, Divider, Progress, Tag, Wrap, WrapItem, useDisclosure,
 } from '@chakra-ui/react';
 import Nav from '../components/Nav';
 import CvPreview from '../components/CvPreview';
 import { getMatchScoreWithOffer } from '../api/matchApi';
+
+function readSession(key) {
+    try { return JSON.parse(sessionStorage.getItem(key) || 'null'); } catch { return null; }
+}
 
 export default function PreviewPage({ structuredCV, structuredOffer, onEdit, onGenerate, onReset }) {
     const navigate = useNavigate();
     const location = useLocation();
     const { isOpen, onOpen, onClose } = useDisclosure();
 
-    // Fallback sessionStorage (si refresh ou navigation directe)
-    const cvFromStorage = useMemo(() => {
-        try { return JSON.parse(sessionStorage.getItem('structuredCV') || 'null'); } catch { return null; }
-    }, []);
-    const offerFromStorage = useMemo(() => {
-        try { return JSON.parse(sessionStorage.getItem('structuredOffer') || 'null'); } catch { return null; }
-    }, []);
 
-    const cv = structuredCV ?? cvFromStorage;
-    const offer = structuredOffer ?? offerFromStorage;
+    const [cv, setCv] = useState(structuredCV ?? readSession('structuredCV'));
+    const [offer, setOffer] = useState(structuredOffer ?? readSession('structuredOffer'));
 
-    // Redirige vers /generate si pas de CV
+    // Met à jour cv/offer depuis props ou sessionStorage quand on revient sur /preview
+    useEffect(() => {
+        setCv(structuredCV ?? readSession('structuredCV'));
+        setOffer(structuredOffer ?? readSession('structuredOffer'));
+    }, [structuredCV, structuredOffer, location.key]);
+
+    // Bonus: si l’utilisateur revient par le bouton back du navigateur
+    useEffect(() => {
+        const onFocus = () => {
+            setCv(prev => structuredCV ?? readSession('structuredCV') ?? prev);
+            setOffer(prev => structuredOffer ?? readSession('structuredOffer') ?? prev);
+        };
+        window.addEventListener('focus', onFocus);
+        return () => window.removeEventListener('focus', onFocus);
+    }, [structuredCV, structuredOffer]);
+
+    // Redirection si pas de CV
     useEffect(() => {
         if (!cv) navigate('/generate');
     }, [cv, navigate]);
@@ -49,12 +49,9 @@ export default function PreviewPage({ structuredCV, structuredOffer, onEdit, onG
     const [matchResult, setMatchResult] = useState(null); // { score, breakdown, missing }
     const score = matchResult?.score ?? null;
 
-    // ⚠️ quand on revient de /edit -> /preview, on reset pour afficher le skeleton et relancer l'appel
-    useEffect(() => {
-        setMatchResult(null);
-    }, [cv, offer, location.key]);
 
-    // Appel du score offer-based + missing
+    useEffect(() => { setMatchResult(null); }, [cv, offer]);
+
     useEffect(() => {
         let cancelled = false;
         async function run() {
@@ -63,7 +60,7 @@ export default function PreviewPage({ structuredCV, structuredOffer, onEdit, onG
             try {
                 const data = await getMatchScoreWithOffer({ cv, offer });
                 if (!cancelled) setMatchResult(data);
-            } catch (_) {
+            } catch {
                 if (!cancelled) setMatchResult(null);
             } finally {
                 if (!cancelled) setLoading(false);
@@ -71,7 +68,7 @@ export default function PreviewPage({ structuredCV, structuredOffer, onEdit, onG
         }
         run();
         return () => { cancelled = true; };
-    }, [cv, offer, location.key]); // <- re-run quand on revient sur la page
+    }, [cv, offer]); // ← se relance sur nouvelles valeurs
 
     const breakdownItems = useMemo(() => {
         const b = matchResult?.breakdown || {};
@@ -85,14 +82,14 @@ export default function PreviewPage({ structuredCV, structuredOffer, onEdit, onG
         ];
     }, [matchResult]);
 
-    const missing = matchResult?.missing || {};
-    const hasMissing =
-        (missing.skills?.length ||
-            missing.technologies?.length ||
-            missing.soft_skills?.length ||
-            missing.languages?.length ||
-            missing.education?.length ||
-            missing.keywords?.length) > 0;
+    const covered = matchResult?.covered || {};
+    const hasCovered =
+           (covered.skills?.length ||
+                covered.technologies?.length ||
+                covered.soft_skills?.length ||
+                covered.languages?.length ||
+                covered.education?.length ||
+                covered.keywords?.length) > 0;
 
     const scoreColor = useMemo(() => {
         if (score == null) return 'gray';
@@ -118,11 +115,8 @@ export default function PreviewPage({ structuredCV, structuredOffer, onEdit, onG
                         </Heading>
                     )}
                     <Tooltip
-                        label={
-                            offer
-                                ? 'Voir la jauge, le breakdown et les éléments manquants'
-                                : "Ajoute d'abord une offre pour obtenir un score"
-                        }
+                        label={offer ? 'Voir la jauge, le breakdown et les éléments manquants'
+                            : "Ajoute d'abord une offre pour obtenir un score"}
                     >
                         <Button
                             size="sm"
@@ -154,21 +148,10 @@ export default function PreviewPage({ structuredCV, structuredOffer, onEdit, onG
                 </Box>
 
                 {/* Boutons d’action */}
-                <Stack
-                    direction={{ base: 'column', sm: 'row' }}
-                    spacing={4}
-                    justify="center"
-                    mt={{ base: 6, md: 8 }}
-                >
-                    <Button variant="outline" onClick={onEdit}>
-                        Modifier le CV
-                    </Button>
-                    <Button colorScheme="blue" onClick={onGenerate}>
-                        Générer le CV en PDF
-                    </Button>
-                    <Button colorScheme="red" variant="ghost" onClick={onReset}>
-                        Recommencer
-                    </Button>
+                <Stack direction={{ base: 'column', sm: 'row' }} spacing={4} justify="center" mt={{ base: 6, md: 8 }}>
+                    <Button variant="outline" onClick={onEdit}>Modifier le CV</Button>
+                    <Button colorScheme="blue" onClick={onGenerate}>Générer le CV en PDF</Button>
+                    <Button colorScheme="red" variant="ghost" onClick={onReset}>Recommencer</Button>
                 </Stack>
             </Container>
 
@@ -181,19 +164,12 @@ export default function PreviewPage({ structuredCV, structuredOffer, onEdit, onG
                     <ModalBody>
                         {/* Jauge */}
                         <HStack spacing={6} align="center" mb={4}>
-                            <CircularProgress
-                                value={score ?? 0}
-                                color={`${scoreColor}.400`}
-                                size="96px"
-                                thickness="10px"
-                            >
+                            <CircularProgress value={score ?? 0} color={`${scoreColor}.400`} size="96px" thickness="10px">
                                 <CircularProgressLabel>{score ?? '—'}%</CircularProgressLabel>
                             </CircularProgress>
                             <Box>
                                 <Text fontWeight="semibold">Score global d’adéquation</Text>
-                                <Text fontSize="sm" color="gray.600">
-                                    Calculé par rapport aux exigences de l’offre (offer-based).
-                                </Text>
+                                <Text fontSize="sm" color="gray.600">Calculé par rapport aux exigences de l’offre (offer-based).</Text>
                             </Box>
                         </HStack>
 
@@ -219,41 +195,42 @@ export default function PreviewPage({ structuredCV, structuredOffer, onEdit, onG
 
                         {/* Missing */}
                         <Box>
-                            <HStack justify="space-between" mb={2}>
-                                <Text fontWeight="semibold">Éléments manquants au CV </Text>
-                                {!hasMissing && <Tag colorScheme="green">Tout est couvert 🎉</Tag>}
-                            </HStack>
+                               <HStack justify="space-between" mb={2}>
+                                 <Text fontWeight="semibold">Éléments couverts (marqués “matched”)</Text>
+                                 {!hasCovered && <Tag colorScheme="gray">Aucun élément marqué</Tag>}
+                               </HStack>
 
-                            {hasMissing && (
-                                <Stack spacing={4}>
-                                    {[
-                                        { key: 'skills', label: 'Compétences' },
-                                        { key: 'technologies', label: 'Technologies' },
-                                        { key: 'soft_skills', label: 'Soft skills' },
-                                        { key: 'languages', label: 'Langues' },
-                                        { key: 'education', label: 'Éducation' },
-                                        { key: 'keywords', label: 'Mots-clés' }
-                                    ].map(sec => {
-                                        const list = missing[sec.key] || [];
-                                        if (!list.length) return null;
-                                        return (
-                                            <Box key={sec.key}>
-                                                <Text fontSize="sm" fontWeight="medium" mb={1}>
-                                                    {sec.label} ({list.length})
-                                                </Text>
-                                                <Wrap>
-                                                    {list.map((it, idx) => (
-                                                        <WrapItem key={`${sec.key}-${idx}`}>
-                                                            <Tag variant="subtle">{it}</Tag>
-                                                        </WrapItem>
-                                                    ))}
-                                                </Wrap>
-                                            </Box>
-                                        );
-                                    })}
-                                </Stack>
-                            )}
-                        </Box>
+                               {hasCovered && (
+                                 <Stack spacing={4}>
+                                       {[
+                                         { key: 'skills', label: 'Compétences' },
+                                         { key: 'technologies', label: 'Technologies' },
+                                         { key: 'soft_skills', label: 'Soft skills' },
+                                         { key: 'languages', label: 'Langues' },
+                                         { key: 'education', label: 'Éducation' },
+                                         { key: 'keywords', label: 'Mots-clés' }
+                                       ].map(sec => {
+                                         const list = covered[sec.key] || [];
+                                         if (!list.length) return null;
+                                         return (
+                                               <Box key={sec.key}>
+                                                     <Text fontSize="sm" fontWeight="medium" mb={1}>
+                                                       {sec.label} ({list.length})
+                                                     </Text>
+                                                     <Wrap>
+                                                       {list.map((it, idx) => (
+                                                         <WrapItem key={`${sec.key}-${idx}`}>
+                                                              <Tag variant="subtle">{it}</Tag>
+                                                             </WrapItem>
+                                                       ))}
+                                                    </Wrap>
+                                                   </Box>
+                                             );
+                                       })}
+                                     </Stack>
+                               )}
+                             </Box>
+
                     </ModalBody>
                     <ModalFooter>
                         <Button onClick={onClose}>Fermer</Button>

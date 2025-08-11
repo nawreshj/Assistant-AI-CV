@@ -167,10 +167,43 @@ function computeMissing(cv, offer = {}) {
         keywords: missingKw
     };
 }
+/** -------- COVERED (items du CV marqués matched:true) -------- */
+function listCoveredFromCv(cv) {
+    const skills = asArray(cv?.skills)
+        .filter(s => s?.matched === true)
+        .map(s => s?.name)
+        .filter(Boolean);
+
+    // agrège exp + projets
+    const technologies = flattenTechnologies(cv)
+        .filter(t => t?.matched === true)
+        .map(t => t?.name)
+        .filter(Boolean);
+
+    const soft_skills = asArray(cv?.soft_skills)
+        .filter(s => s?.matched === true)
+        .map(s => s?.name)
+        .filter(Boolean);
+
+    const languages = asArray(cv?.languages)
+        .filter(l => l?.matched === true)
+        .map(l => (l?.level ? `${l.language} – ${l.level}` : l?.language))
+        .filter(Boolean);
+
+    const education = asArray(cv?.educations)
+        .filter(e => e?.matched === true)
+        .map(e => (e?.institution ? `${e.degree} – ${e.institution}` : e?.degree))
+        .filter(Boolean);
+
+    // pas de flag matched pour keywords_in_common, on affiche ce que le CV fournit
+    const keywords = asArray(cv?.keywords_in_common).filter(Boolean);
+
+    return { skills, technologies, soft_skills, languages, education, keywords };
+}
 
 /** Endpoints **/
 
-// POST /match/score-with-offer  -> score OFFER-BASED + missing
+// POST /match/score-with-offer
 exports.computeMatchScoreWithOffer = async (req, res) => {
     try {
         const cv = req.body?.cv || req.body?.cvJSON;
@@ -180,8 +213,9 @@ exports.computeMatchScoreWithOffer = async (req, res) => {
 
         const base = computeScoreOfferBased(cv, offer);
         const missing = computeMissing(cv, offer);
+        const covered = listCoveredFromCv(cv);
 
-        return res.json({ ...base, missing });
+        return res.json({ ...base, missing, covered });
     } catch (err) {
         console.error('Erreur computeMatchScoreWithOffer:', err);
         return res.status(500).json({ error: 'Erreur lors du calcul du score avec offre.' });

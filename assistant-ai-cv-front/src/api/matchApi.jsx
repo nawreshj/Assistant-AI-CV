@@ -6,6 +6,7 @@ import { MATCH_SCORE_WITH_OFFER } from "../constants/back.jsx";
 export const getMatchScoreWithOffer = async ({ cv, offer }) => {
     try {
         const response = await axios.post(MATCH_SCORE_WITH_OFFER, { cv, offer });
+        console.log( response.data);
         return response.data; // { score, breakdown, missing }
     } catch (error) {
         console.error("Erreur lors du calcul du score avec offre:", error);

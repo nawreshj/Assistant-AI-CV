@@ -29,6 +29,7 @@ const EditPage = ({ structuredCV, onChange, onBack, onGenerate, language }) => {
     const [expanded, setExpanded] = useState([]);
     const bgPage     = useColorModeValue('gray.100', 'background'); // clair → gris très pâle, sombre → token background
     const bgCard     = useColorModeValue('white',    'card');       // clair → blanc,       sombre → token card
+
     useEffect(() => {
         setExpanded(Object.keys(structuredCV));
     }, [structuredCV]);
@@ -217,6 +218,7 @@ const EditPage = ({ structuredCV, onChange, onBack, onGenerate, language }) => {
                                                                             <Button leftIcon={<AddIcon />} size="xs" onClick={()=>addItem(section,`${i}.description.tasks`)} variant="outline">Ajouter tâche</Button>
                                                                         </VStack>
                                                                     </Box>
+
                                                                 </VStack>
                                                             </Box>
                                                         ))}
