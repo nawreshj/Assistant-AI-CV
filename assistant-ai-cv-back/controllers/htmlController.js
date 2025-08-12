@@ -1,7 +1,5 @@
-
-
-const ejs  = require('ejs');            // Moteur de template Embedded JavaScript
-const path = require('path');           // Utils pour gérer les chemins de fichier
+const ejs  = require('ejs');
+const path = require('path');
 const sectionTitles = {
     fr: {
         profile: "Profil",
@@ -37,32 +35,25 @@ const sectionTitles = {
  */
 exports.getCvHtml = async (req, res, next) => {
     try {
-        // 1) Lecture du JSON structuré envoyé par le client
-        //const structuredCV = req.body;
+
         const structuredCV = req.body;
-        console.log('📥 getCvHtml payload:', structuredCV);
 
         const lang = structuredCV.language || 'en';
         const titles = sectionTitles[lang] || sectionTitles.en;
         const renderData = { ...structuredCV, titles};
 
 
-        // 2) Construction du chemin vers le fichier de template EJS
         const templatePath = path.join(__dirname, '../views/cvTemplate3.ejs');
-        console.log('🔗 Template EJS path:', templatePath);
 
-        // 3) Rend le template en HTML string
         const html = await ejs.renderFile(templatePath, renderData);
-        console.log('✅ HTML généré (length):', html.length);
 
-        // 4) Renvoi du HTML au client (Content-Type text/html)
         res
             .status(200)
             .set('Content-Type', 'text/html')
             .send(html);
 
     } catch (err) {
-        console.error('❌ Erreur dans getCvHtml :', err);
-        next(err); // passe l'erreur au middleware global
+        console.error(' Erreur dans getCvHtml :', err);
+        next(err);
     }
 };

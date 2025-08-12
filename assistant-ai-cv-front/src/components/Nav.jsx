@@ -13,7 +13,6 @@ export default function Nav() {
         <Box bg={bg} color={color} px={4} py={2} w="100%">
             <Flex justify="space-between" align="center">
 
-                {/* Logo + texte cliquables */}
                 <Flex
                     align="center"
                     cursor="pointer"
@@ -31,7 +30,7 @@ export default function Nav() {
 
                 </Flex>
 
-                {/* Bouton dark mode */}
+
                 <Button onClick={toggleColorMode} size="sm" variant="ghost">
                     <Icon as={colorMode === "light" ? FaMoon : FaSun} boxSize={5} />
                 </Button>

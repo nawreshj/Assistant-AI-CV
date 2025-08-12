@@ -41,38 +41,31 @@ async function generatePdf(req, res, next) {
 // 1ter) Injecte le mapping dans les données passées à EJS
         const renderData = { ...structuredCV, titles };
 
-        // 2) Chemin vers le template
+
         const templatePath = path.join(__dirname, '../views/cvTemplate3.ejs');
-        console.log('🔗 templatePath :', templatePath);
+        console.log(' templatePath :', templatePath);
 
-        // 3) Rend le HTML
         const html = await ejs.renderFile(templatePath, renderData);
-        console.log('📝 HTML généré (longueur) :', html.length);
+        console.log(' HTML généré (longueur) :', html.length);
 
-        // 4) Lancement de Puppeteer
         const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-        console.log('🚀 Puppeteer lancé');
+        console.log(' Puppeteer lancé');
         const page = await browser.newPage();
 
-        // 5) Injection du HTML et attente du rendu
         await page.setContent(html, { waitUntil: 'networkidle0' });
         console.log('📄 Contenu chargé dans la page');
 
-        // 6) Génère le PDF (Uint8Array ou ArrayBuffer)
         const raw = await page.pdf({ /* tes options */ });
 
-// 6a) Si ce n'est pas un Buffer, on le convertit
         const pdfBuffer = Buffer.isBuffer(raw)
             ? raw
             : Buffer.from(raw);
 
 
 
-        // 7) Ferme le browser
         await browser.close();
         console.log('🔒 Puppeteer fermé');
 
-        // 8) Envoi de la réponse PDF
         res
             .status(200)
             .set({
@@ -83,7 +76,7 @@ async function generatePdf(req, res, next) {
             .send(pdfBuffer);
 
     } catch (err) {
-        console.error('❌ Erreur dans generatePdf :', err);
+        console.error(' Erreur dans generatePdf :', err);
         next(err);
     }
 }

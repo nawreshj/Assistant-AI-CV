@@ -29,7 +29,7 @@ export default function PreviewPage({ structuredCV, structuredOffer, onEdit, onG
     const location = useLocation();
     const { isOpen, onOpen, onClose } = useDisclosure();
 
-    // Fallback sessionStorage (si refresh ou navigation directe)
+    // Au cas ou ya un refresh on perd pas la donnée
     const cvFromStorage = useMemo(() => {
         try { return JSON.parse(sessionStorage.getItem('structuredCV') || 'null'); } catch { return null; }
     }, []);
@@ -49,12 +49,12 @@ export default function PreviewPage({ structuredCV, structuredOffer, onEdit, onG
     const [matchResult, setMatchResult] = useState(null); // { score, breakdown, missing }
     const score = matchResult?.score ?? null;
 
-    // ⚠️ quand on revient de /edit -> /preview, on reset pour afficher le skeleton et relancer l'appel
+    // on recalcule le score apres avoir modifer dans editPage.jsx et on revient sur l'apercu
     useEffect(() => {
         setMatchResult(null);
     }, [cv, offer, location.key]);
 
-    // Appel du score offer-based + missing
+
     useEffect(() => {
         let cancelled = false;
         async function run() {

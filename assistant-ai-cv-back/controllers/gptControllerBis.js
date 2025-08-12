@@ -1,5 +1,3 @@
-// controllerBis.js
-// Version "prompt-only" pour extraction et reformulation de CV sans function_call
 
 const { OpenAI } = require('openai');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -150,7 +148,7 @@ Schema:
 
 
 
-// Helper: nettoyage et validation JSON
+
 function isValidJson(raw) {
     try {
         const cleaned = raw.trim();
@@ -203,7 +201,7 @@ exports.extractOfferPromptOnly = async (req, res) => {
     res.json(JSON.parse(cleaned));
 };
 
-//Extraction CV + Offre en parallèle
+// Extraction CV + Offre en parallèle + coût
 exports.extractBoth = async (req, res) => {
     const { cvText, offerText } = req.body;
     if (!cvText || !offerText) {
@@ -212,7 +210,6 @@ exports.extractBoth = async (req, res) => {
 
     try {
         const [cvResp, offerResp] = await Promise.all([
-
             openai.chat.completions.create({
                 model: 'gpt-4o-mini',
                 messages: [
@@ -245,18 +242,50 @@ exports.extractBoth = async (req, res) => {
 
         const cvData = JSON.parse(cvClean);
         const offerData = JSON.parse(offerClean);
+
+        // === Coût (mêmes tarifs que ta copine) ===
+        // 0.015 $ / 1000 tokens (input), 0.06 $ / 1000 tokens (output)
+        const IN_PRICE_PER_1K  = 0.015;
+        const OUT_PRICE_PER_1K = 0.06;
+
+        const cvUsage = cvResp.usage || {};
+        const offerUsage = offerResp.usage || {};
+
+        const cvCost =
+            ((cvUsage.prompt_tokens || 0)    * IN_PRICE_PER_1K  / 1000) +
+            ((cvUsage.completion_tokens || 0) * OUT_PRICE_PER_1K / 1000);
+
+        const offerCost =
+            ((offerUsage.prompt_tokens || 0)    * IN_PRICE_PER_1K  / 1000) +
+            ((offerUsage.completion_tokens || 0) * OUT_PRICE_PER_1K / 1000);
+
+        const extractionTotal = Number((cvCost + offerCost).toFixed(6));
+
         console.log("extraction CV ");
         console.log(cvData);
-        console.log("extraction offre")
+        console.log("extraction offre");
         console.log(offerData);
-        res.json({ cvData, offerData });
+        console.log("COUTS -> cv:", cvCost.toFixed(6), "offer:", offerCost.toFixed(6), "total:", extractionTotal.toFixed(6));
+
+        res.json({
+            cvData,
+            offerData,
+            usage: { cv: cvUsage, offer: offerUsage },
+            pricing: {
+                unit: { input_per_1k: IN_PRICE_PER_1K, output_per_1k: OUT_PRICE_PER_1K },
+                cv: Number(cvCost.toFixed(6)),
+                offer: Number(offerCost.toFixed(6)),
+                extraction_total: extractionTotal,
+                currency: "USD"
+            }
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
     }
 };
 
-//Reformulation finale
+
 exports.reformulateResume = async (req, res) => {
     const { cvData, offerData } = req.body;
     if (!cvData || !offerData) return res.status(400).json({ error: 'Missing cvData or offerData.' });
@@ -269,27 +298,58 @@ ${JSON.stringify(offerData, null, 2)}
 
 Please generate the final personalized CV JSON according to the schema above.`;
 
-    const response = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-            { role: 'system', content: systemPromptReformulate },
-            { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.7
-    });
+    try {
+        const response = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                { role: 'system', content: systemPromptReformulate },
+                { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.7
+        });
 
-    const raw = response.choices[0].message.content;
-    const { valid, cleaned } = isValidJson(raw);
-    console.log("C'est un format Json valide");
-    console.log(JSON.parse(cleaned));
-    if (!valid) return res.status(422).json({ error: 'Invalid JSON', raw });
+        const raw = response.choices[0].message.content;
+        const { valid, cleaned } = isValidJson(raw);
+        if (!valid) return res.status(422).json({ error: 'Invalid JSON', raw });
 
-    console.log("✅ CV structuré généré !");
-    const finalCv = JSON.parse(cleaned);
-    res.json({ structuredCV: finalCv });
-    console.dir(cleaned, { depth: null, colors: true });
-    console.log("##########################################################");
-    console.log(JSON.stringify(finalCv, null, 2));
+    // Tarifs donnés par Mohamed Ali a Amna
+        const IN_PRICE_PER_1K  = 0.015; // $ par 1000 tokens input
+        const OUT_PRICE_PER_1K = 0.06;  // $ par 1000 tokens output
 
+        const usage = response.usage || {};
+        const promptTokens = usage.prompt_tokens || 0;
+        const completionTokens = usage.completion_tokens || 0;
+
+        const costInput  = (promptTokens * IN_PRICE_PER_1K  / 1000);
+        const costOutput = (completionTokens * OUT_PRICE_PER_1K / 1000);
+        const totalCost  = costInput + costOutput;
+
+        // === Logs console pour démo ===
+        console.log("CV structuré généré !");
+        console.log("Tokens input :", promptTokens, " | Prix input :", costInput.toFixed(6), "USD");
+        console.log("Tokens output:", completionTokens, " | Prix output:", costOutput.toFixed(6), "USD");
+        console.log(" Coût total reformulation:", totalCost.toFixed(6), "USD");
+
+        const finalCv = JSON.parse(cleaned);
+
+        // === Réponse JSON ===
+        res.json({
+            structuredCV: finalCv,
+            usage, // détails complets des tokens OpenAI
+            pricing: {
+                unit: { input_per_1k: IN_PRICE_PER_1K, output_per_1k: OUT_PRICE_PER_1K },
+                tokens: { input: promptTokens, output: completionTokens },
+                cost: { input: Number(costInput.toFixed(6)), output: Number(costOutput.toFixed(6)), total: Number(totalCost.toFixed(6)) },
+                currency: "USD"
+            }
+        });
+
+        console.log("======================== JSON CV REFORMULÉ =============");
+        console.log(JSON.stringify(finalCv, null, 2));
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
 };
 

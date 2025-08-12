@@ -1,6 +1,4 @@
-// controllers/matchController.js
 
-// utils rapides
 const asArray = (x) => (Array.isArray(x) ? x : []);
 
 function norm(s) {
@@ -18,7 +16,7 @@ const parseNames = (list) =>
         .map(norm)
         .filter(Boolean);
 
-// aggrège techs depuis exp + projets
+// Regroupement des technologies presente dans Projets et Experience
 function flattenTechnologies(cv) {
     const techs = [];
     for (const ex of asArray(cv?.experiences)) {
@@ -60,7 +58,7 @@ const cvKeywordSet = (cv) => new Set(asArray(cv?.keywords_in_common).map(norm));
 // éducation : au moins une “matched”
 const anyEducationMatched = (cv) => asArray(cv?.educations).some((e) => e?.matched === true);
 
-// poids (simple et suffisant)
+// poids
 const WEIGHTS = Object.freeze({
     skills: 0.40,
     technologies: 0.35,
@@ -70,20 +68,20 @@ const WEIGHTS = Object.freeze({
     keywords: 0.05,
 });
 
-// coverage basé offre
+// coverage basé offre : on s ebase sur le nombre d'element de l'offre  couvert par le CV
 function offerCoverage(coveredCount, offerTotal) {
     if (!offerTotal || offerTotal <= 0) return 1;
     return coveredCount / offerTotal;
 }
 
-// ex: "francais courant" -> "francais"
+//Compare qu ela langue demandé pas le niveau pour etre moins restrictif sur le matcing
 function baseLang(s) {
     const n = norm(s);
     const first = n.split(/\s+/)[0];
     return first || n;
 }
 
-// matching moins strict pour éviter les faux négatifs
+// on essaye d'etre moins restrictif sur le matching
 const tokens = (s) => norm(s).split(/[^a-z0-9+.#]+/).filter(Boolean);
 
 function looseHas(cvSet, name) {
@@ -106,8 +104,7 @@ function computeScoreOfferBased(cv, offer) {
     const offEdu    = parseNames(offer?.education);
     const offKw     = parseNames(offer?.keywords || offer?.keywords_required);
 
-    // // debug:
-    // console.log('offer langs raw:', offer?.languages, '->', offLangs);
+
 
     // sets côté CV
     const cvSkills = cvMatchedSkillSet(cv);
@@ -152,7 +149,7 @@ function computeScoreOfferBased(cv, offer) {
     };
 }
 
-// ---- missing
+
 function computeMissing(cv, offer = {}) {
     const offSkills = parseNames(offer.skills);
     const offTechs  = parseNames(offer.technologies);
@@ -184,7 +181,7 @@ function computeMissing(cv, offer = {}) {
     };
 }
 
-// ---- covered (juste pour l'affichage positif)
+// je ne l'ai finalement pas utilisé j'ai priviligé les missing
 function listCoveredFromCv(cv) {
     const skills = asArray(cv?.skills).filter((s) => s?.matched === true).map((s) => s?.name).filter(Boolean);
 

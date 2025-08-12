@@ -7,9 +7,9 @@ const AutoResizeTextarea = ({ value, onChange, placeholder, className = "" }) =>
         const textarea = textareaRef.current;
         if (textarea) {
             textarea.style.height = "auto"; // reset
-            textarea.style.height = textarea.scrollHeight + "px"; // ajustement
+            textarea.style.height = textarea.scrollHeight + "px";
         }
-    }, [value]); // s'exécute à chaque changement de valeur
+    }, [value]);
 
     return (
         <textarea
@@ -18,7 +18,7 @@ const AutoResizeTextarea = ({ value, onChange, placeholder, className = "" }) =>
             value={value}
             placeholder={placeholder}
             onChange={onChange}
-            rows={1} // pour éviter le saut à 3 lignes par défaut
+            rows={1}
         />
     );
 };

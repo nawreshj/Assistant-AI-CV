@@ -3,15 +3,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 
-/**
- * Reusable Button component with static Tailwind classNames for purge safety.
- *
- * Props:
- * - children: content inside the button/link
- * - variant: "gradient" (default), "solid", or "outline"
- * - href: if provided, renders an <a> tag, otherwise a <button>
- * - onClick: click handler for <button>
- */
 const Button = ({ children, variant = 'gradient', href, onClick }) => {
     let classes = '';
     switch (variant) {

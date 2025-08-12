@@ -1,6 +1,7 @@
 const { OpenAI } = require('openai');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+// Premiere version de mon gptController.js en utilisant function_call , mais quand le json devenait trop complexe ca buggais , donc j'ai fais le gptControllerBis et j'ai tout mis  dans le message
 function buildCvExtractionPrompt(cvText) {
     return `
 You are a CV parser.
@@ -370,7 +371,7 @@ exports.reformulateResume = async (req, res) => {
 
         const structuredCV = JSON.parse(response.choices[0].message.function_call.arguments);
 
-        console.log("✅ CV structuré généré !");
+        console.log("CV structuré généré !");
         console.log(structuredCV);
         res.json({ structuredCV });
 

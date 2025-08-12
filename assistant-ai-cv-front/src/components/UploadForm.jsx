@@ -44,10 +44,10 @@ export default function UploadForm({ onSubmit }) {
             maxW="4xl"
             mx="auto"
             p={{ base: 4, md: 8 }}
-            bg="card"                 // carte: blanc (light) / gris .700 (dark)
+            bg="card"
             color="text"
             borderWidth={1}
-            borderColor="step"        // token de bordure
+            borderColor="step"
             borderRadius="md"
             boxShadow="sm"
         >
@@ -57,7 +57,7 @@ export default function UploadForm({ onSubmit }) {
                     direction={{ base: 'column', md: 'row' }}
                     align="flex-start"
                 >
-                    {/* Zone de dépôt du CV */}
+
                     <Box flex={1}>
                         <Text fontWeight="semibold" mb={2} color="text">
                             Uploadez votre CV
@@ -70,7 +70,7 @@ export default function UploadForm({ onSubmit }) {
                             borderRadius="md"
                             textAlign="center"
                             cursor="pointer"
-                            bg="card"             // suit le mode (cohérent avec la carte)
+                            bg="card"
                         >
                             <Icon as={LuUpload} boxSize={8} mb={2} color="subtext" />
                             {isDragActive
@@ -88,7 +88,7 @@ export default function UploadForm({ onSubmit }) {
                         </Box>
                     </Box>
 
-                    {/* Zone de texte de l'offre et bouton */}
+
                     <Box flex={1}>
                         <Text fontWeight="semibold" mb={2} color="text">
                             Copier-coller l'offre d'emploi
@@ -105,7 +105,7 @@ export default function UploadForm({ onSubmit }) {
                         <Button
                             type="submit"
                             mt={4}
-                            bg="accent"           // bouton suit le thème
+                            bg="accent"           
                             color="buttonText"
                             _hover={{ filter: 'brightness(1.05)' }}
                             _active={{ filter: 'brightness(0.98)' }}
