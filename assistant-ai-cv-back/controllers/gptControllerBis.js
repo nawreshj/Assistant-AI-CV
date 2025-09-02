@@ -43,7 +43,7 @@ Return ONLY a valid JSON object with these keys (omit or empty if absent):
 No markdown, no prose, no code blocks—only pure JSON.
 `;
 
-//Prompt pour reformulation du CV final
+//Prompt pour reformulation du CV adapté à l'offre
 const systemPromptReformulate = `
 You are an expert HR professional and resume consultant.
 
@@ -352,4 +352,5 @@ Please generate the final personalized CV JSON according to the schema above.`;
         res.status(500).json({ error: err.message });
     }
 };
+
 
